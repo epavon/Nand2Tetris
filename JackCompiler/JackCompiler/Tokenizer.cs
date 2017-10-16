@@ -69,7 +69,7 @@ namespace JackCompiler
         {
             string token = string.Empty;
             char curChar = ' ', nextChar = ' ';
-            bool commentBlock = false, isStringConstant = false, isIntegerConstant = false;
+            bool commentBlock = false, isStringConstant = false;
 
             for (; _reader.Peek() >= 0; curChar = (char)_reader.Read(), nextChar = (char)_reader.Peek())
             {
@@ -124,45 +124,56 @@ namespace JackCompiler
                         };
                         break;
                     }
-                    else
+                    else 
                     {
                         isStringConstant = true;
                         continue;
                     }
                 }
 
-                // Handle integerConstant
-                if(Char.IsDigit(curChar))
-                {
-                    isIntegerConstant = true;
-                }
-
                 token += curChar;
-                if(isStringConstant || isIntegerConstant)
+                if(isStringConstant)
                 {
                     continue;
                 }
 
-                // handle keyword
-                if(SettingsReader.Keywords.Contains(token) && nextChar == ' ')
+                // reached delimmitter 
+                if(nextChar == ' ' || nextChar == '\t' || nextChar == '\r' || nextChar == '\n' || nextChar == '"' || SettingsReader.Symbols.Contains(nextChar))
                 {
-                    CurrentToken = new Token<string>
+                    // handle keyword
+                    if (SettingsReader.Keywords.Contains(token))
                     {
-                        Value = token,
-                        TokenType = TokenType.KEYWORD
-                    };
-                    break;
-                }
+                        CurrentToken = new Token<string>
+                        {
+                            Value = token,
+                            TokenType = TokenType.KEYWORD
+                        };
+                        break;
+                    }
 
-                // handle identifier 
-                if(nextChar == ' ' || nextChar == '\t' || nextChar == '\r' || nextChar == '\n' || SettingsReader.Symbols.Contains(nextChar))
-                {
+                    // handle end of integerConstant
+                    int num;
+                    if(Int32.TryParse(token, out num))
+                    {
+                        CurrentToken = new Token<int>
+                        {
+                            Value = num,
+                            TokenType = TokenType.INT_COSNT
+                        };
+                        break;
+                    }
+
+                    // handle identifier
                     if (IdentifierHelper.IdentifierRegex.IsMatch(token))
                     {
-
+                        CurrentToken = new Token<string>
+                        {
+                            TokenType = TokenType.IDENTIFIER,
+                            Value = token
+                        };
+                        break;
                     }
                 }
-                
                 
             }
 

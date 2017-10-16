@@ -8,9 +8,11 @@ namespace JackCompiler
 {
     public enum TokenType
     {
+        NONE,
         KEYWORD,
         SYMBOL,
         INT_COSNT,
-        STRING_CONST
+        STRING_CONST,
+        IDENTIFIER
     }
 }
