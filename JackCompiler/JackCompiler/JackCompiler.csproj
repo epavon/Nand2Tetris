@@ -52,7 +52,9 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SettingsReader.cs" />
     <Compile Include="Token.cs" />
-    <Compile Include="TokenClassification.cs" />
+    <Compile Include="Helpers\IdentifierHelper.cs" />
+    <Compile Include="Types\KeywordType.cs" />
+    <Compile Include="Types\TokenType.cs" />
     <Compile Include="Tokenizer.cs" />
   </ItemGroup>
   <ItemGroup>
