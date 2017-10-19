@@ -15,7 +15,7 @@ namespace JackCompiler
 
             if (args.Length < 1)
             {
-                Console.WriteLine("This program expects 1 argument consisting of name of VM file to translate or the folder containing vm files.");
+                Console.WriteLine("This program expects 1 argument consisting of name of Jack file to compile or the folder containing Jack files.");
                 return;
             }
 
@@ -37,19 +37,17 @@ namespace JackCompiler
 
         static void CompileFile(string inputFile)
         {
-            string outputFile = inputFile.Remove(inputFile.IndexOf(".vm")) + ".asm";
+            string outputFile = inputFile.Remove(inputFile.IndexOf(".jack")) + ".xml";
 
             Tokenizer tokenizer = new Tokenizer(inputFile);
-            //CodeWriter codeWriter = new CodeWriter(outputFile);
-
-            //foreach (var command in tokenizer.HasMoreTokens())
-            //{
-            //    if (command != null && !string.IsNullOrWhiteSpace(command.Command))
-            //    {
-            //        codeWriter.WriteCommand(command);
-            //    }
-            //}
-            //codeWriter.WriteToFile();
+            CompilationEngine parser = new CompilationEngine(outputFile);
+            while(tokenizer.HasMoreTokens())
+            {
+                tokenizer.Advance();
+                
+                
+                //Console.WriteLine(tokenizer.CurrentToken.Va);
+            }
 
             Console.WriteLine("Done! Output File: " + outputFile);
         }
@@ -58,25 +56,7 @@ namespace JackCompiler
         {
             string outputFile = folderName + "/" + folderName + ".asm";
 
-            // Handle bootstrap code
-            //CommandData sysCommand = new CommandData { Command = "call", MemSegment = "Sys.init", CommandType = CommandType.C_CALL, Literal = "Call Sys.init" };
-            //CodeWriter codeWriter = new CodeWriter(outputFile);
-            //codeWriter.WriteBoostrap(sysCommand);
-
-            //foreach (var inputFile in inputFiles)
-            //{
-            //    Parser parser = new Parser(inputFile);
-            //    foreach (var command in parser.ParseNextCommand())
-            //    {
-            //        if (command != null && !string.IsNullOrWhiteSpace(command.Command))
-            //        {
-            //            codeWriter.WriteCommand(command);
-            //        }
-            //    }
-            //}
-            //codeWriter.WriteToFile();
-
-            Console.WriteLine("Done! Output File: " + outputFile);
+            
         }
     }
 }

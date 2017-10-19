@@ -41,7 +41,7 @@ namespace JackCompiler
         public bool HasMoreTokens()
         {
             bool result = false;
-            char curChar = ' ';
+            char curChar = (char)_reader.Peek();
 
             // Skip spaces, tabs, end-of-line, ...
             for (; _reader.Peek() >= 0; curChar = (char)_reader.Peek())
@@ -68,24 +68,73 @@ namespace JackCompiler
         public void Advance()
         {
             string token = string.Empty;
-            char curChar = ' ', nextChar = ' ';
+            char curChar = (char)_reader.Read(), nextChar = (char)_reader.Peek();
             bool commentBlock = false, isStringConstant = false;
 
             for (; _reader.Peek() >= 0; curChar = (char)_reader.Read(), nextChar = (char)_reader.Peek())
             {
-                // handle block comment
-                if(commentBlock)
+                // Skip whitespace
+                if (!isStringConstant)
                 {
-                    if(curChar == '*' && nextChar == '/')
+                    switch (curChar)
                     {
+                        case ' ':
+                        case '\t':
+                        case '\r':
+                        case '\n':
+                            //_reader.Read();
+                            continue;
+                    }
+                }
+
+                // build token
+                if (curChar != '"' && !commentBlock)
+                    token += curChar;
+
+                // handle stringConstant
+                if (isStringConstant)
+                {
+                    if (nextChar == '"')
+                    {
+                        _reader.Read();
+                        CurrentToken = new Token<string>
+                        {
+                            Value = token,
+                            TokenType = TokenType.STRING_CONST
+                        };
+                        break;
+                    }
+                    if(curChar == '"')
+                    {   // Empty string
+                        CurrentToken = new Token<string>
+                        {
+                            Value = token,
+                            TokenType = TokenType.STRING_CONST
+                        };
+                        break;
+                    }
+                    continue;
+                }
+                else if (curChar == '"')
+                {
+                    isStringConstant = true;
+                    token = string.Empty;
+                    continue;
+                }
+
+                // handle block comment
+                if (commentBlock)
+                {
+                    if (curChar == '*' && nextChar == '/')
+                    {
+                        _reader.Read();
                         commentBlock = false;
                     }
-                    _reader.Read();
                     continue;
                 }
 
                 // handle symbol
-                if(SettingsReader.Symbols.Contains(curChar))
+                if (SettingsReader.Symbols.Contains(curChar))
                 {
                     // Is it comment?
                     if (curChar == '/')
@@ -96,8 +145,9 @@ namespace JackCompiler
                             _reader.ReadLine();
                             continue;
                         }
-                        else if(nextChar == '*')
+                        else if (nextChar == '*')
                         {
+                            token = string.Empty;
                             commentBlock = true;
                             continue;
                         }
@@ -112,40 +162,24 @@ namespace JackCompiler
                     break;
                 }
 
-                // handle StringConstant
-                if (curChar == '"')
-                {
-                    if (isStringConstant)
-                    {
-                        CurrentToken = new Token<string>
-                        {
-                            TokenType = TokenType.STRING_CONST,
-                            Value = token
-                        };
-                        break;
-                    }
-                    else 
-                    {
-                        isStringConstant = true;
-                        continue;
-                    }
-                }
-
-                token += curChar;
-                if(isStringConstant)
-                {
-                    continue;
-                }
-
                 // reached delimmitter 
-                if(nextChar == ' ' || nextChar == '\t' || nextChar == '\r' || nextChar == '\n' || nextChar == '"' || SettingsReader.Symbols.Contains(nextChar))
+                if (nextChar == ' ' || nextChar == '\t' || nextChar == '\r' || nextChar == '\n' || nextChar == '"' || SettingsReader.Symbols.Contains(nextChar))
                 {
                     // handle keyword
                     if (SettingsReader.Keywords.Contains(token))
                     {
-                        CurrentToken = new Token<string>
+                        KeywordType thisKeywordType = KeywordType.NONE;
+                        var keywordTypeValues = Enum.GetValues(typeof(KeywordType));
+                        foreach (var kwType in keywordTypeValues)
+	                    {
+                            if(kwType.ToString() == token.ToUpper())
+                            {
+                                thisKeywordType = (KeywordType)kwType;
+                            }
+	                    }
+                        CurrentToken = new Token<KeywordType>
                         {
-                            Value = token,
+                            Value = thisKeywordType,
                             TokenType = TokenType.KEYWORD
                         };
                         break;
@@ -153,7 +187,7 @@ namespace JackCompiler
 
                     // handle end of integerConstant
                     int num;
-                    if(Int32.TryParse(token, out num))
+                    if (Int32.TryParse(token, out num))
                     {
                         CurrentToken = new Token<int>
                         {
@@ -173,18 +207,33 @@ namespace JackCompiler
                         };
                         break;
                     }
+
+                    // Then we have an error - nothing to do for this ast
+                    throw new Exception("Not a valid token");
                 }
-                
+
             }
 
-            if(CurrentToken == null)
+            if (CurrentToken == null)
             {   // Error out?
-
+                CurrentToken = new Token<string>
+                {
+                    TokenType = TokenType.NONE,
+                    Value = string.Empty
+                };
             }
 
         }
 
-        
+
+        //
+        // helper functions
+        //
+
+        private void SkipWhitespace()
+        {
+
+        }
 
 
     }

@@ -8,6 +8,7 @@ namespace JackCompiler.Types
 {
     public enum KeywordType
     {
+        NONE,
         CLASS,
         METHOD,
         FUNCTION,

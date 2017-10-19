@@ -11,7 +11,7 @@ namespace JackCompiler.Types
     {
         public static Regex IdentifierRegex { get; private set; }
 
-        static public IdentifierHelper()
+        static IdentifierHelper()
         {
             IdentifierRegex = new Regex(@"^([a-zA-Z_]+[A-Za-z0-9_]*)$");
         }
