@@ -1,4 +1,5 @@
-﻿using System;
+﻿using JackCompiler.Contracts;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -7,25 +8,36 @@ using System.Threading.Tasks;
 
 namespace JackCompiler
 {
-    public class CompilationEngine
+    public class CompilationEngine : IDisposable
     {
-        StreamWriter _streamWriter;
-
+        Tokenizer       _tokenizer;
+        ITokenWriter    _tokenWriter;
 
         //
         // Ctors / Dtors
         //
-        public CompilationEngine(string fileName)
+        public CompilationEngine(Tokenizer tokenizer, ITokenWriter tokenWriter)
         {
-            _streamWriter = new StreamWriter(fileName);
+            _tokenizer      = tokenizer;
+            _tokenWriter    = tokenWriter;
         }
 
         ~CompilationEngine()
         {
-            if(_streamWriter != null)
+            Dispose();
+        }
+
+        public void Dispose()
+        {
+            if(_tokenWriter != null && _tokenWriter is IDisposable)
             {
-                _streamWriter.Dispose();
-                _streamWriter = null;
+                ((IDisposable)_tokenWriter).Dispose();
+            }
+
+            if (_tokenizer != null)
+            {
+                _tokenizer.Dispose();
+                _tokenizer = null;
             }
         }
 
@@ -33,16 +45,53 @@ namespace JackCompiler
         // Methods
         //
 
-        public void CompileClass()
+        public void CompileFile()
         {
-
+            if(_tokenizer.HasMoreTokens())
+            {
+                _tokenizer.Advance();
+                CompileClass();
+                //Console.WriteLine(_tokenizer.CurrentToken.Value);
+            }
         }
 
+
+        //
+        // class : 'class' className '{' classVarDec* subroutineDec* '}'
+        public void CompileClass()
+        {
+            if (_tokenizer.CurrentToken.TokenType == TokenType.KEYWORD && _tokenizer.CurrentToken.GetKeywordType() == Types.KeywordType.CLASS)
+            {
+                _tokenWriter.WriteTokenStart(_tokenizer.CurrentToken);
+                if (_tokenizer.HasMoreTokens())
+                {
+                    _tokenizer.Advance();
+                    var currentToken = _tokenizer.CurrentToken;
+                    if(currentToken.TokenType == TokenType.IDENTIFIER)
+                    {
+                        _tokenWriter.WriteTerminalToken(currentToken);
+                    }
+                    else
+                    {
+                        throw new Exception("Bad Syntax");
+                    }
+                }
+                else
+                {
+                    throw new Exception("Bad Syntax");
+                }
+            }
+        }
+
+        //
+        // statements : statement* --> statement : letStatement | ifStatement | whileStatement| doStatement | returnStatement
         public void CompileStatements()
         {
 
         }
 
+        //
+        // ifStatement : 'if' '(' expression ')' '{' statements '}' ('else' '{' statements '}' )?
         public void CompileIfStatement()
         {
 
@@ -50,7 +99,9 @@ namespace JackCompiler
 
         public void CompileWhileStatement()
         {
+            _tokenWriter.WriteTokenStart(_tokenizer.CurrentToken);
 
+            //_tokenWriter.WriteTokenEnd<>();
         }
 
         public void CompileClassVarDec()
@@ -124,5 +175,7 @@ namespace JackCompiler
 
         }
 
+
+        
     }
 }

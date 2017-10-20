@@ -8,11 +8,11 @@ using System.Threading.Tasks;
 
 namespace JackCompiler
 {
-    public class Tokenizer
+    public class Tokenizer : IDisposable
     {
         private StreamReader _reader;
 
-        public object CurrentToken { get; private set; }
+        public Token CurrentToken { get; private set; }
 
 
         //
@@ -24,6 +24,11 @@ namespace JackCompiler
         }
 
         ~Tokenizer()
+        {
+            Dispose();
+        }
+
+        public void Dispose()
         {
             if (_reader != null)
             {
@@ -97,7 +102,7 @@ namespace JackCompiler
                     if (nextChar == '"')
                     {
                         _reader.Read();
-                        CurrentToken = new Token<string>
+                        CurrentToken = new Token
                         {
                             Value = token,
                             TokenType = TokenType.STRING_CONST
@@ -106,7 +111,7 @@ namespace JackCompiler
                     }
                     if(curChar == '"')
                     {   // Empty string
-                        CurrentToken = new Token<string>
+                        CurrentToken = new Token
                         {
                             Value = token,
                             TokenType = TokenType.STRING_CONST
@@ -154,9 +159,9 @@ namespace JackCompiler
                     }
 
                     // It's not a comment
-                    CurrentToken = new Token<char>
+                    CurrentToken = new Token
                     {
-                        Value = curChar,
+                        Value = curChar.ToString(),
                         TokenType = TokenType.SYMBOL
                     };
                     break;
@@ -168,18 +173,10 @@ namespace JackCompiler
                     // handle keyword
                     if (SettingsReader.Keywords.Contains(token))
                     {
-                        KeywordType thisKeywordType = KeywordType.NONE;
-                        var keywordTypeValues = Enum.GetValues(typeof(KeywordType));
-                        foreach (var kwType in keywordTypeValues)
-	                    {
-                            if(kwType.ToString() == token.ToUpper())
-                            {
-                                thisKeywordType = (KeywordType)kwType;
-                            }
-	                    }
-                        CurrentToken = new Token<KeywordType>
+                        
+                        CurrentToken = new Token
                         {
-                            Value = thisKeywordType,
+                            Value = token,
                             TokenType = TokenType.KEYWORD
                         };
                         break;
@@ -189,9 +186,9 @@ namespace JackCompiler
                     int num;
                     if (Int32.TryParse(token, out num))
                     {
-                        CurrentToken = new Token<int>
+                        CurrentToken = new Token
                         {
-                            Value = num,
+                            Value = num.ToString(),
                             TokenType = TokenType.INT_COSNT
                         };
                         break;
@@ -200,7 +197,7 @@ namespace JackCompiler
                     // handle identifier
                     if (IdentifierHelper.IdentifierRegex.IsMatch(token))
                     {
-                        CurrentToken = new Token<string>
+                        CurrentToken = new Token
                         {
                             TokenType = TokenType.IDENTIFIER,
                             Value = token
@@ -216,7 +213,7 @@ namespace JackCompiler
 
             if (CurrentToken == null)
             {   // Error out?
-                CurrentToken = new Token<string>
+                CurrentToken = new Token
                 {
                     TokenType = TokenType.NONE,
                     Value = string.Empty
@@ -236,5 +233,7 @@ namespace JackCompiler
         }
 
 
+
+        
     }
 }

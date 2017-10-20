@@ -40,14 +40,9 @@ namespace JackCompiler
             string outputFile = inputFile.Remove(inputFile.IndexOf(".jack")) + ".xml";
 
             Tokenizer tokenizer = new Tokenizer(inputFile);
-            CompilationEngine parser = new CompilationEngine(outputFile);
-            while(tokenizer.HasMoreTokens())
-            {
-                tokenizer.Advance();
-                
-                
-                //Console.WriteLine(tokenizer.CurrentToken.Va);
-            }
+            CompilationEngine compilationEngine = new CompilationEngine(tokenizer, new XmlTokenWriter(outputFile));
+            compilationEngine.CompileFile();
+            
 
             Console.WriteLine("Done! Output File: " + outputFile);
         }
