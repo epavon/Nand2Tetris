@@ -1,4 +1,5 @@
 ﻿using JackCompiler.Contracts;
+using JackCompiler.Exceptions;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -10,16 +11,16 @@ namespace JackCompiler
 {
     public class CompilationEngine : IDisposable
     {
-        Tokenizer       _tokenizer;
-        ITokenWriter    _tokenWriter;
+        Tokenizer _tokenizer;
+        ITokenWriter _tokenWriter;
 
         //
         // Ctors / Dtors
         //
         public CompilationEngine(Tokenizer tokenizer, ITokenWriter tokenWriter)
         {
-            _tokenizer      = tokenizer;
-            _tokenWriter    = tokenWriter;
+            _tokenizer = tokenizer;
+            _tokenWriter = tokenWriter;
         }
 
         ~CompilationEngine()
@@ -29,7 +30,7 @@ namespace JackCompiler
 
         public void Dispose()
         {
-            if(_tokenWriter != null && _tokenWriter is IDisposable)
+            if (_tokenWriter != null && _tokenWriter is IDisposable)
             {
                 ((IDisposable)_tokenWriter).Dispose();
             }
@@ -47,12 +48,8 @@ namespace JackCompiler
 
         public void CompileFile()
         {
-            if(_tokenizer.HasMoreTokens())
-            {
-                _tokenizer.Advance();
-                CompileClass();
-                //Console.WriteLine(_tokenizer.CurrentToken.Value);
-            }
+            _tokenizer.Advance();
+            CompileClass();
         }
 
 
@@ -60,26 +57,25 @@ namespace JackCompiler
         // class : 'class' className '{' classVarDec* subroutineDec* '}'
         public void CompileClass()
         {
+            string compUnit = "class";
             if (_tokenizer.CurrentToken.TokenType == TokenType.KEYWORD && _tokenizer.CurrentToken.GetKeywordType() == Types.KeywordType.CLASS)
             {
-                _tokenWriter.WriteTokenStart(_tokenizer.CurrentToken);
-                if (_tokenizer.HasMoreTokens())
+                _tokenWriter.WriteTokenStart(compUnit);
+                _tokenizer.Advance();
+
+                var currentToken = _tokenizer.CurrentToken;
+                if (currentToken.TokenType == TokenType.IDENTIFIER)
                 {
-                    _tokenizer.Advance();
-                    var currentToken = _tokenizer.CurrentToken;
-                    if(currentToken.TokenType == TokenType.IDENTIFIER)
-                    {
-                        _tokenWriter.WriteTerminalToken(currentToken);
-                    }
-                    else
-                    {
-                        throw new Exception("Bad Syntax");
-                    }
+                    _tokenWriter.WriteTerminalToken(compUnit, currentToken);
                 }
                 else
                 {
-                    throw new Exception("Bad Syntax");
+                    throw new BadSyntaxException();
                 }
+            }
+            else
+            {
+                throw new BadSyntaxException();
             }
         }
 
@@ -87,6 +83,7 @@ namespace JackCompiler
         // statements : statement* --> statement : letStatement | ifStatement | whileStatement| doStatement | returnStatement
         public void CompileStatements()
         {
+            string compUnit = "statements";
 
         }
 
@@ -94,88 +91,113 @@ namespace JackCompiler
         // ifStatement : 'if' '(' expression ')' '{' statements '}' ('else' '{' statements '}' )?
         public void CompileIfStatement()
         {
+            string compUnit = "ifStatement";
+        }
 
+        public void CompileLetStatement()
+        {
+            string compUnit = "letStatement";
         }
 
         public void CompileWhileStatement()
         {
-            _tokenWriter.WriteTokenStart(_tokenizer.CurrentToken);
+            string compUnit = "whileStatement";
+
+            if (_tokenizer.CurrentToken.TokenType == TokenType.KEYWORD && _tokenizer.CurrentToken.GetKeywordType() == Types.KeywordType.WHILE)
+            {
+                _tokenWriter.WriteTokenStart(compUnit);
+                _tokenizer.Advance();
+                if (_tokenizer.CurrentToken.Value == "(")
+                {
+                    _tokenWriter.WriteTerminalToken(compUnit, _tokenizer.CurrentToken);
+
+                }
+                else
+                {
+                    throw new BadSyntaxException();
+                }
+
+            }
+            else
+            {
+                throw new BadSyntaxException();
+            }
 
             //_tokenWriter.WriteTokenEnd<>();
         }
 
         public void CompileClassVarDec()
         {
-
+            string compUnit = "varDec";
         }
 
         public void CompileSubroutineDec()
         {
-
+            string compUnit = "subroutineDec";
         }
 
         public void CompileParameterList()
         {
-
+            string compUnit = "parameterList";
         }
 
         public void CompileSubroutineBody()
         {
-
+            string compUnit = "subroutineBody";
         }
 
         public void CompileVarDec()
         {
-
+            string compUnit = "varDec";
         }
 
         public void CompileLet()
         {
-
+            string compUnit = "let";
         }
 
         public void CompileIf()
         {
-
+            string compUnit = "if";
         }
 
         public void CompileWhile()
         {
-
+            string compUnit = "while";
         }
 
         public void CompileDo()
         {
-
+            string compUnit = "do";
         }
 
         public void CompileReturn()
         {
-
+            string compUnit = "return";
         }
 
         //
-        // Compiles an expression
+        // expression : term (op term)?
         public void CompileExpression()
         {
-
+            string compUnit = "expression";
         }
 
         //
-        // Compiles a term
+        // term : varName | constant
         public void CompileTerm()
         {
-
+            string compUnit = "term";
         }
 
         //
         // Compiles a (possibly empty) comma-saparated list of expressions
         public void CompileExpressionList()
         {
-
+            string compUnit = "expressionList";
         }
 
 
-        
+
     }
 }

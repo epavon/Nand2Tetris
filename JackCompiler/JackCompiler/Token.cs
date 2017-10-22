@@ -32,6 +32,22 @@ namespace JackCompiler
             return thisKeywordType;
         }
 
-
+        public string GetTokenTypeName()
+        {
+            switch(TokenType)
+            {
+                case JackCompiler.TokenType.IDENTIFIER:
+                    return "identifier";
+                case JackCompiler.TokenType.INT_COSNT:
+                    return "integerConstant";
+                case JackCompiler.TokenType.KEYWORD:
+                    return "keyword";
+                case JackCompiler.TokenType.STRING_CONST:
+                    return "stringConstant";
+                case JackCompiler.TokenType.SYMBOL:
+                    return "symbol";
+            }
+            return string.Empty;
+        }
     }
 }

@@ -17,32 +17,34 @@ namespace JackCompiler
             _streamWriter = new StreamWriter(outputFile);
         }
 
-        //
-        // Methods
-        //
-
-        public void WriteTokenStart(Token token)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void WriteTokenEnd(Token token)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void WriteTerminalToken(Token token)
-        {
-            throw new NotImplementedException();
-        }
-
         public void Dispose()
         {
-            if(_streamWriter != null && _streamWriter.BaseStream != null)
+            if (_streamWriter != null && _streamWriter.BaseStream != null)
             {
                 _streamWriter.Dispose();
                 _streamWriter = null;
             }
         }
+
+        //
+        // Methods
+        //
+
+        public void WriteTokenStart(string compUnit)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void WriteTokenEnd(string compUnit)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void WriteTerminalToken(string compUnit, Token token)
+        {
+            throw new NotImplementedException();
+        }
+
+        
     }
 }
