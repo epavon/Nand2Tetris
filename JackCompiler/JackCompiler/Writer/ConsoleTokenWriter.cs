@@ -9,21 +9,34 @@ namespace JackCompiler.Writer
 {
     public class ConsoleTokenWriter : ITokenWriter
     {
-        public void WriteTokenStart(string compUnit)
+        public void WriteTokenStart(string compUnit, int depth)
         {
-            Console.WriteLine("<" + compUnit + ">");
+            string initSpaces = GetSpacesDepth(depth);
+            Console.WriteLine(initSpaces + "<" + compUnit + ">");
         }
 
-        public void WriteTokenEnd(string compUnit)
+        public void WriteTokenEnd(string compUnit, int depth)
         {
-            Console.WriteLine("</" + compUnit + ">");
+            string initSpaces = GetSpacesDepth(depth);
+            Console.WriteLine(initSpaces + "</" + compUnit + ">");
         }
 
-        public void WriteTerminalToken(string compUnit, Token token)
+        public void WriteTerminalToken(Token token, int depth)
         {
-            WriteTokenStart(compUnit);
-            Console.WriteLine(token.Value);
-            WriteTokenEnd(compUnit);
+            string initSpaces = GetSpacesDepth(depth);
+            Console.Write(initSpaces + "<" + token.GetTokenTypeName() + ">");
+            Console.Write(token.Value);
+            Console.WriteLine("</" + token.GetTokenTypeName() + ">");
+        }
+
+        private string GetSpacesDepth(int depth)
+        {
+            string result = string.Empty;
+            for (int i = 0; i < depth*2; i++)
+            {
+                result += " ";
+            }
+            return result;
         }
     }
 }

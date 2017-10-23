@@ -30,17 +30,17 @@ namespace JackCompiler
         // Methods
         //
 
-        public void WriteTokenStart(string compUnit)
+        public void WriteTokenStart(string compUnit, int depth)
         {
             throw new NotImplementedException();
         }
 
-        public void WriteTokenEnd(string compUnit)
+        public void WriteTokenEnd(string compUnit, int depth)
         {
             throw new NotImplementedException();
         }
 
-        public void WriteTerminalToken(string compUnit, Token token)
+        public void WriteTerminalToken(Token token, int depth)
         {
             throw new NotImplementedException();
         }

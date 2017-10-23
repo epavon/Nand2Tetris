@@ -9,8 +9,8 @@ namespace JackCompiler.Contracts
 {
     public interface ITokenWriter
     {
-        void WriteTokenStart    (string compUnit);
-        void WriteTokenEnd      (string compUnit);
-        void WriteTerminalToken (string compUnit, Token token);
+        void WriteTokenStart    (string compUnit, int depth);
+        void WriteTokenEnd      (string compUnit, int depth);
+        void WriteTerminalToken (Token token, int depth);
     }
 }
