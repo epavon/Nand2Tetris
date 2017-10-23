@@ -288,48 +288,113 @@ namespace JackCompiler
         public void CompileStatements(int depth)
         {
             string compUnit = "statements";
+
+            // statements Start
+            _tokenWriter.WriteTokenStart(compUnit, depth);
+
             while(true)
             { 
                 if(_tokenizer.CurrentToken.GetKeywordType() == Types.KeywordType.LET)
                 {
-                    CompileLetStatement();
+                    CompileLetStatement(depth + 1);
                     continue;
                 }
                 if(_tokenizer.CurrentToken.GetKeywordType() == Types.KeywordType.WHILE)
                 {
-                    CompileWhileStatement(depth);
+                    CompileWhileStatement(depth + 1);
                     continue;
                 }
                 if(_tokenizer.CurrentToken.GetKeywordType() == Types.KeywordType.IF)
                 {
-                    CompileIfStatement();
+                    CompileIfStatement(depth + 1);
                     continue;
                 }
                 if(_tokenizer.CurrentToken.GetKeywordType() == Types.KeywordType.RETURN)
                 {
-                    CompileReturnStatement();
+                    CompileReturnStatement(depth + 1);
                     continue;
                 }
                 if(_tokenizer.CurrentToken.GetKeywordType() == Types.KeywordType.DO)
                 {
-                    CompileDoStatement();
+                    CompileDoStatement(depth + 1);
                     continue;
                 }
                 break;
             }
 
+            // statements End
+            _tokenWriter.WriteTokenEnd(compUnit, depth);
         }
 
         //
         // ifStatement: 'if' '(' expression ')' '{' statements '}' ('else' '{' statements '}' )?
-        public void CompileIfStatement()
+        public void CompileIfStatement(int depth)
         {
             string compUnit = "ifStatement";
+
+            // ifStatement Start
+            _tokenWriter.WriteTokenStart(compUnit, depth);
+
+            // compile: 'if'
+            var ifToken = Eat("if");
+            _tokenWriter.WriteTerminalToken(ifToken, depth + 1);
+
+            // compile: '('
+            var leftParenToken = Eat("(");
+            _tokenWriter.WriteTerminalToken(leftParenToken, depth + 1);
+
+            // compile: expression
+            CompileExpression();
+
+            // compile: ')'
+            var rightParenToken = Eat(")");
+            _tokenWriter.WriteTerminalToken(rightParenToken, depth + 1);
+
+            // compile: '{'
+            var leftBraceToken = Eat("{");
+            _tokenWriter.WriteTerminalToken(leftBraceToken, depth + 1);
+
+            // compile: statements
+            CompileStatements(depth + 1);
+
+            // compile: '}'
+            var rightBraceToken = Eat("}");
+            _tokenWriter.WriteTerminalToken(rightBraceToken, depth + 1);
+
+            // compile: '('
+            leftParenToken = Eat("(");
+            _tokenWriter.WriteTerminalToken(leftParenToken, depth + 1);
+
+            // compile: ('else' '{' statements '}' )?
+            if(_tokenizer.CurrentToken.Value == "else")
+            {
+                // compile: 'else'
+                var elseToken = Eat("else");
+                _tokenWriter.WriteTerminalToken(elseToken, depth + 1);
+
+                // compile: '{'
+                leftBraceToken = Eat("{");
+                _tokenWriter.WriteTerminalToken(leftBraceToken, depth + 1); 
+
+                // compile: statements
+                CompileStatements(depth + 1);
+
+                // compile: '}'
+                rightBraceToken = Eat("}");
+                _tokenWriter.WriteTerminalToken(rightBraceToken, depth + 1);
+
+                // compile: ')'
+                rightParenToken = Eat(")");
+                _tokenWriter.WriteTerminalToken(rightParenToken, depth + 1);
+            }
+
+            // ifStatement End
+            _tokenWriter.WriteTokenEnd(compUnit, depth);
         }
 
         //
         // letStatement: 'let' varName ('[' expression ']')? '=' expression ';'
-        public void CompileLetStatement()
+        public void CompileLetStatement(int depth)
         {
             string compUnit = "letStatement";
         }
@@ -356,14 +421,14 @@ namespace JackCompiler
 
         //
         // doStatement: 'do' subroutineCall ';'
-        public void CompileDoStatement()
+        public void CompileDoStatement(int depth)
         {
 
         }
 
         //
         // 'return' expression? ';'
-        public void CompileReturnStatement()
+        public void CompileReturnStatement(int depth)
         {
 
         }
