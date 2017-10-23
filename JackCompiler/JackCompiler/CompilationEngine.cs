@@ -144,41 +144,80 @@ namespace JackCompiler
 
             // compile: ('constructor'|'function'|'method')
             var subToken = EatSubroutine();
-            _tokenWriter.WriteTerminalToken(subToken, depth);
+            _tokenWriter.WriteTerminalToken(subToken, depth + 1);
 
             // compile: ('void'|type)
             var subTypeToken = SoftEatType() ?? Eat("void");
-            _tokenWriter.WriteTerminalToken(subTypeToken, depth);
+            _tokenWriter.WriteTerminalToken(subTypeToken, depth + 1);
 
             // compile: subtroutineName
             var subNameToken = EatIdentifier();
-            _tokenWriter.WriteTerminalToken(subNameToken, depth);
+            _tokenWriter.WriteTerminalToken(subNameToken, depth + 1);
 
             // compile: '('
             var leftParenToken = Eat("(");
-            _tokenWriter.WriteTerminalToken(leftParenToken, depth);
+            _tokenWriter.WriteTerminalToken(leftParenToken, depth + 1);
 
             // compile: parameterList
-            CompileParameterList();
+            CompileParameterList(depth + 1);
 
             // compile: ')'
             var rightParenToken = Eat(")");
-            _tokenWriter.WriteTerminalToken(rightParenToken, depth);
+            _tokenWriter.WriteTerminalToken(rightParenToken, depth + 1);
 
             // compile: subroutineBody
             CompileSubroutineBody();
         }
 
         //
-        // ( (type varName) (',' type varName)*)?
-        public void CompileParameterList()
+        // ( (type varName) (',' type varName)* )?
+        public void CompileParameterList(int depth)
         {
+            bool commaEncountered = false;
             string compUnit = "parameterList";
+            // parameterList Start
+            _tokenWriter.WriteTokenStart(compUnit, depth);
+
+            // compile: ( (type varName) (',' type varName)* )? 
+            while(  _tokenizer.CurrentToken.GetKeywordType() == Types.KeywordType.BOOLEAN
+                ||  _tokenizer.CurrentToken.GetKeywordType() == Types.KeywordType.INT
+                ||  _tokenizer.CurrentToken.GetKeywordType() == Types.KeywordType.CHAR
+                || commaEncountered)
+            {
+                // compile: type
+                var typeToken = EatType();
+                _tokenWriter.WriteTerminalToken(typeToken, depth + 1);
+
+                // compile: varName
+                var varNameToken = EatIdentifier();
+                _tokenWriter.WriteTerminalToken(varNameToken, depth + 1);
+
+                // compile: ','
+                if(_tokenizer.CurrentToken.Value == ",")
+                {
+                    var commaToken = Eat(",");
+                    _tokenWriter.WriteTerminalToken(commaToken, depth + 1);
+                    commaEncountered = true;
+                    continue;
+                }
+                else
+                {
+                    commaEncountered = false;
+                }
+
+                break;
+            }
+
+            // parameterList End
+            _tokenWriter.WriteTokenEnd(compUnit, depth);
         }
 
         public void CompileSubroutineBody()
         {
             string compUnit = "subroutineBody";
+
+            // subroutineBody Start
+
         }
 
         //
