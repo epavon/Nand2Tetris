@@ -442,22 +442,41 @@ namespace JackCompiler
         }
 
         //
-        // whileStatement: 'while' '(' expression ')' '{' statements '}' ('else' '{' statements '}' )?
+        // whileStatement: 'while' '(' expression ')' '{' statements '}' 
         public void CompileWhileStatement(int depth)
         {
             string compUnit = "whileStatement";
 
-            var whileToken = Eat("while");
+            // whileStatement Start
             _tokenWriter.WriteTokenStart(compUnit, depth);
 
-            var leftParenToken = Eat("(");
-            _tokenWriter.WriteTerminalToken(leftParenToken, depth);
+            // compile: 'while'
+            var whileToken = Eat("while");
+            _tokenWriter.WriteTerminalToken(whileToken, depth + 1);
 
+            // compile: '('
+            var leftParenToken = Eat("(");
+            _tokenWriter.WriteTerminalToken(leftParenToken, depth + 1);
+
+            // compile: expression
             CompileExpression(depth + 1);
 
+            // compile: ')'
             var rightParenToken = Eat(")");
-            _tokenWriter.WriteTerminalToken(rightParenToken, depth);
+            _tokenWriter.WriteTerminalToken(rightParenToken, depth + 1);
 
+            // compile: '{'
+            var leftBraceToken = Eat("{");
+            _tokenWriter.WriteTerminalToken(leftBraceToken, depth + 1);
+
+            // compile: statements
+            CompileStatements(depth + 1);
+
+            // compile: '}'
+            var rightBraceToken = Eat("}");
+            _tokenWriter.WriteTerminalToken(rightBraceToken, depth + 1);
+
+            // whileStatement End
             _tokenWriter.WriteTokenEnd(compUnit, depth);
         }
 
@@ -475,8 +494,7 @@ namespace JackCompiler
             _tokenWriter.WriteTerminalToken(doToken, depth + 1);
 
             // compile: subroutineCall
-            var subroutineCallToken = EatIdentifier();
-            _tokenWriter.WriteTerminalToken(subroutineCallToken, depth+1);
+            CompileSubroutineCall(depth + 1);
 
             // compile: ';'
             var semiColonToken = Eat(";");
@@ -599,47 +617,9 @@ namespace JackCompiler
                     _tokenWriter.WriteTerminalToken(rightBracketToken, depth + 1);
                 }
                 // compile: subroutineCall
-                else if(nextToken.Value == "(")
+                else if(nextToken.Value == "(" || nextToken.Value == ".")
                 {
-                    // compile: subroutineName
-                    var subName = EatIdentifier();
-                    _tokenWriter.WriteTerminalToken(subName, depth + 1);
-
-                    // compile: '('
-                    var leftParenToken = Eat("(");
-                    _tokenWriter.WriteTerminalToken(leftParenToken, depth + 1);
-
-                    // compile: expression
-                    CompileExpression(depth + 1);
-
-                    // compile: ')'
-                    var rightParenToken = Eat(")");
-                    _tokenWriter.WriteTerminalToken(rightParenToken, depth + 1);
-                }
-                else if(nextToken.Value == ".")
-                {
-                    // compile: (className | varName)
-                    var nameToken = EatIdentifier();
-                    _tokenWriter.WriteTerminalToken(nameToken, depth + 1);
-
-                    // compile '.'
-                    var dotToken = Eat(".");
-                    _tokenWriter.WriteTerminalToken(dotToken, depth + 1);
-
-                    // compile: subroutineName
-                    var subNameToken = EatIdentifier();
-                    _tokenWriter.WriteTerminalToken(subNameToken, depth + 1);
-
-                    // compile: '('
-                    var leftParenToken = Eat("(");
-                    _tokenWriter.WriteTerminalToken(leftParenToken, depth + 1);
-
-                    // compile: expression
-                    CompileExpressionList(depth + 1);
-
-                    // compile: ')'
-                    var rightParenToken = Eat(")");
-                    _tokenWriter.WriteTerminalToken(rightParenToken, depth + 1);
+                    CompileSubroutineCall(depth + 1);
                 }
                 // compile: varName
                 else
@@ -652,6 +632,55 @@ namespace JackCompiler
             // term End
             _tokenWriter.WriteTokenEnd(compUnit, depth);
         }        
+
+        //
+        // subroutineCall: subroutineName '(' expressionList ')' | (className | varName) '.' subroutineName '(' expressionList '}'
+        public void CompileSubroutineCall(int depth)
+        {
+            var nextToken = _tokenizer.NextToken;
+            if (nextToken.Value == "(")
+            {
+                // compile: subroutineName
+                var subName = EatIdentifier();
+                _tokenWriter.WriteTerminalToken(subName, depth);
+
+                // compile: '('
+                var leftParenToken = Eat("(");
+                _tokenWriter.WriteTerminalToken(leftParenToken, depth);
+
+                // compile: expression
+                CompileExpression(depth);
+
+                // compile: ')'
+                var rightParenToken = Eat(")");
+                _tokenWriter.WriteTerminalToken(rightParenToken, depth);
+            }
+            else if (nextToken.Value == ".")
+            {
+                // compile: (className | varName)
+                var nameToken = EatIdentifier();
+                _tokenWriter.WriteTerminalToken(nameToken, depth);
+
+                // compile '.'
+                var dotToken = Eat(".");
+                _tokenWriter.WriteTerminalToken(dotToken, depth);
+
+                // compile: subroutineName
+                var subNameToken = EatIdentifier();
+                _tokenWriter.WriteTerminalToken(subNameToken, depth);
+
+                // compile: '('
+                var leftParenToken = Eat("(");
+                _tokenWriter.WriteTerminalToken(leftParenToken, depth);
+
+                // compile: expression
+                CompileExpressionList(depth);
+
+                // compile: ')'
+                var rightParenToken = Eat(")");
+                _tokenWriter.WriteTerminalToken(rightParenToken, depth);
+            }
+        }
 
         //
         // expressionList: (expression (',' expression)* )?

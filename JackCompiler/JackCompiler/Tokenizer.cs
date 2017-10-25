@@ -74,15 +74,16 @@ namespace JackCompiler
         {
             CurrentToken = null;
             string token = string.Empty;
-            char curChar = (char)_reader.Read(), nextChar = (char)_reader.Peek();
-            bool commentBlock = false, isStringConstant = false;
 
-            if(NextToken != null)
+            if (NextToken != null)
             {
                 CurrentToken = NextToken;
                 NextToken = null;
                 return;
             }
+
+            char curChar = (char)_reader.Read(), nextChar = (char)_reader.Peek();
+            bool commentBlock = false, isStringConstant = false;
 
             if (HasMoreTokens())
             {

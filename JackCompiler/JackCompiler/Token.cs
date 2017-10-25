@@ -10,8 +10,20 @@ namespace JackCompiler
     public class Token
     {
         public string Value { get; set; }
-        public TokenType TokenType { get; set; }
         
+        public TokenType TokenType { get; set; }
+
+        public string OutputValue 
+        { 
+            get 
+            {
+                if (Value == "<")
+                    return "&lt";
+                if (Value == ">")
+                    return "&gt";
+                return Value;
+            } 
+        }
 
         public KeywordType GetKeywordType()
         {

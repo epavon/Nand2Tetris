@@ -25,7 +25,7 @@ namespace JackCompiler.Writer
         {
             string initSpaces = GetSpacesDepth(depth);
             Console.Write(initSpaces + "<" + token.GetTokenTypeName() + ">");
-            Console.Write(token.Value);
+            Console.Write(token.OutputValue);
             Console.WriteLine("</" + token.GetTokenTypeName() + ">");
         }
 
