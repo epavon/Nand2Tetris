@@ -15,6 +15,8 @@ namespace JackCompiler
         ITokenWriter _tokenWriter;
         int depth = 0;
 
+        private readonly char[] ops = { '+', '-', '*', '/', '&','|', '<', '>', '=' };
+
         //
         // Ctors / Dtors
         //
@@ -344,7 +346,7 @@ namespace JackCompiler
             _tokenWriter.WriteTerminalToken(leftParenToken, depth + 1);
 
             // compile: expression
-            CompileExpression();
+            CompileExpression(depth + 1);
 
             // compile: ')'
             var rightParenToken = Eat(")");
@@ -397,6 +399,46 @@ namespace JackCompiler
         public void CompileLetStatement(int depth)
         {
             string compUnit = "letStatement";
+
+            // letStatement Start
+            _tokenWriter.WriteTokenStart(compUnit, depth);
+
+            // compile: 'let'
+            var letToken = Eat("let");
+            _tokenWriter.WriteTerminalToken(letToken, depth + 1);
+
+            // compile: varName
+            var varNameToken = EatIdentifier();
+            _tokenWriter.WriteTerminalToken(varNameToken, depth + 1);
+
+            // compile: ('[' expression ']')?
+            if(_tokenizer.CurrentToken.Value == "[")
+            {
+                // compile: '['
+                var leftBracketToken = Eat("[");
+                _tokenWriter.WriteTerminalToken(leftBracketToken, depth+1);
+
+                // compile: expression
+                CompileExpression(depth+1);
+
+                // compile: ']'
+                var rightBracketToken = Eat("]");
+                _tokenWriter.WriteTerminalToken(rightBracketToken, depth + 1);
+            }
+
+            // compile: '='
+            var assignmentToken = Eat("=");
+            _tokenWriter.WriteTerminalToken(assignmentToken, depth + 1);
+
+            // compile: expression
+            CompileExpression(depth + 1);
+
+            // compile: ';'
+            var semiColonToken = Eat(";");
+            _tokenWriter.WriteTerminalToken(semiColonToken, depth + 1);
+
+            // letStatement End
+            _tokenWriter.WriteTokenEnd(compUnit, depth);
         }
 
         //
@@ -411,7 +453,7 @@ namespace JackCompiler
             var leftParenToken = Eat("(");
             _tokenWriter.WriteTerminalToken(leftParenToken, depth);
 
-            CompileExpression();
+            CompileExpression(depth + 1);
 
             var rightParenToken = Eat(")");
             _tokenWriter.WriteTerminalToken(rightParenToken, depth);
@@ -423,7 +465,25 @@ namespace JackCompiler
         // doStatement: 'do' subroutineCall ';'
         public void CompileDoStatement(int depth)
         {
+            string compUnit = "doStatement";
 
+            // doStatement Start
+            _tokenWriter.WriteTokenStart(compUnit, depth);
+
+            // compile: 'do'
+            var doToken = Eat("do");
+            _tokenWriter.WriteTerminalToken(doToken, depth + 1);
+
+            // compile: subroutineCall
+            var subroutineCallToken = EatIdentifier();
+            _tokenWriter.WriteTerminalToken(subroutineCallToken, depth+1);
+
+            // compile: ';'
+            var semiColonToken = Eat(";");
+            _tokenWriter.WriteTerminalToken(semiColonToken, depth + 1);
+
+            // doStatement End
+            _tokenWriter.WriteTokenEnd(compUnit, depth);
         }
 
         //
@@ -437,23 +497,188 @@ namespace JackCompiler
 
         //
         // expression : term (op term)?
-        public void CompileExpression()
+        public void CompileExpression(int depth)
         {
             string compUnit = "expression";
+
+            // expression Start
+            _tokenWriter.WriteTokenStart(compUnit, depth);
+
+            // compile: term
+            CompileTerm(depth + 1);
+
+            // compile: (op term)?
+            if(ops.Contains(_tokenizer.CurrentToken.Value[0]))
+            {
+                // compile: op
+                var opToken = EatOp();
+                _tokenWriter.WriteTerminalToken(opToken, depth + 1);
+
+                // compile: term
+                CompileTerm(depth + 1);
+            }
+
+            // expression End
+            _tokenWriter.WriteTokenEnd(compUnit, depth);
         }
 
         //
-        // term : integerConstant | stringConstant | keywordConstant | varName | varName '[' expression ']' | subroutineCall | '(' expression ')' | unaryOp term
-        public void CompileTerm()
+        // term : integerConstant | stringConstant | keywordConstant | unaryOp term | '(' expression ')' | varName | varName '[' expression ']' | subroutineCall 
+        public void CompileTerm(int depth)
         {
             string compUnit = "term";
+
+            // term Start
+            _tokenWriter.WriteTokenStart(compUnit, depth);
+
+            // compile: integerConstant
+            if(_tokenizer.CurrentToken.TokenType == TokenType.INT_COSNT)
+            {   
+                _tokenWriter.WriteTerminalToken(_tokenizer.CurrentToken, depth + 1);
+                _tokenizer.Advance();
+            }
+            // compile: integerConstant
+            else if(_tokenizer.CurrentToken.TokenType == TokenType.STRING_CONST)
+            {  
+                _tokenWriter.WriteTerminalToken(_tokenizer.CurrentToken, depth + 1);
+                _tokenizer.Advance();
+            }
+            // compile: keywordConstant
+            else if(    _tokenizer.CurrentToken.GetKeywordType() == Types.KeywordType.TRUE 
+                    ||  _tokenizer.CurrentToken.GetKeywordType() == Types.KeywordType.FALSE
+                    ||  _tokenizer.CurrentToken.GetKeywordType() == Types.KeywordType.NULL
+                    ||  _tokenizer.CurrentToken.GetKeywordType() == Types.KeywordType.THIS)
+            {   
+                _tokenWriter.WriteTerminalToken(_tokenizer.CurrentToken, depth + 1);
+                _tokenizer.Advance();
+            }
+            // compile: unaryOp term
+            else if(_tokenizer.CurrentToken.Value == "~" || _tokenizer.CurrentToken.Value == "-")
+            {
+                // compile: unaryOp
+                _tokenWriter.WriteTerminalToken(_tokenizer.CurrentToken, depth + 1);
+                _tokenizer.Advance();
+                // compile: term
+                CompileTerm(depth + 1);
+            }
+            // compile: '(' expression ')'
+            else if(_tokenizer.CurrentToken.Value == "(")
+            {
+                // compile '('
+                var leftParenToken = Eat("(");
+                _tokenWriter.WriteTerminalToken(leftParenToken, depth + 1);
+
+                // compile: expression
+                CompileExpression(depth + 1);
+
+                // compile: ')'
+                var rightParenToken = Eat(")");
+                _tokenWriter.WriteTerminalToken(rightParenToken, depth + 1);
+
+            }
+            // compile: varName | varName '[' expression ']' | subroutineCall '(' expression ')'
+            else if(_tokenizer.CurrentToken.TokenType == TokenType.IDENTIFIER)
+            {
+                var nextToken = _tokenizer.Peek();
+                // compile: varName '[' expression ']'
+                if(nextToken.Value == "[")
+                {
+                    // compile: varName
+                    var varNameToken = EatIdentifier();
+                    _tokenWriter.WriteTerminalToken(varNameToken, depth + 1);
+
+                    // compile: '['
+                    var leftBracketToken = Eat("[");
+                    _tokenWriter.WriteTerminalToken(leftBracketToken, depth + 1);
+
+                    // compile: expression
+                    CompileExpression(depth + 1);
+
+                    // compile: ']'
+                    var rightBracketToken = Eat("]");
+                    _tokenWriter.WriteTerminalToken(rightBracketToken, depth + 1);
+                }
+                // compile: subroutineCall
+                else if(nextToken.Value == "(")
+                {
+                    // compile: subroutineName
+                    var subName = EatIdentifier();
+                    _tokenWriter.WriteTerminalToken(subName, depth + 1);
+
+                    // compile: '('
+                    var leftParenToken = Eat("(");
+                    _tokenWriter.WriteTerminalToken(leftParenToken, depth + 1);
+
+                    // compile: expression
+                    CompileExpression(depth + 1);
+
+                    // compile: ')'
+                    var rightParenToken = Eat(")");
+                    _tokenWriter.WriteTerminalToken(rightParenToken, depth + 1);
+                }
+                else if(nextToken.Value == ".")
+                {
+                    // compile: (className | varName)
+                    var nameToken = EatIdentifier();
+                    _tokenWriter.WriteTerminalToken(nameToken, depth + 1);
+
+                    // compile '.'
+                    var dotToken = Eat(".");
+                    _tokenWriter.WriteTerminalToken(dotToken, depth + 1);
+
+                    // compile: subroutineName
+                    var subNameToken = EatIdentifier();
+                    _tokenWriter.WriteTerminalToken(subNameToken, depth + 1);
+
+                    // compile: '('
+                    var leftParenToken = Eat("(");
+                    _tokenWriter.WriteTerminalToken(leftParenToken, depth + 1);
+
+                    // compile: expression
+                    CompileExpressionList(depth + 1);
+
+                    // compile: ')'
+                    var rightParenToken = Eat(")");
+                    _tokenWriter.WriteTerminalToken(rightParenToken, depth + 1);
+                }
+                // compile: varName
+                else
+                {
+                    var varNameToken = EatIdentifier();
+                    _tokenWriter.WriteTerminalToken(varNameToken, depth + 1);
+                }
+            }
+
+            // term End
+            _tokenWriter.WriteTokenEnd(compUnit, depth);
         }        
 
         //
         // expressionList: (expression (',' expression)* )?
-        public void CompileExpressionList()
+        public void CompileExpressionList(int depth)
         {
             string compUnit = "expressionList";
+
+            // expressionList Start
+            _tokenWriter.WriteTokenStart(compUnit, depth);
+
+            // compile: (expression (',' expression)* )?
+            if(_tokenizer.CurrentToken.Value != ")")
+            {
+                CompileExpression(depth + 1);
+                while(_tokenizer.CurrentToken.Value == ",")
+                {
+                    // compile: ','
+                    var commaToken = Eat(",");
+                    _tokenWriter.WriteTerminalToken(commaToken, depth + 1);
+
+                    // compile: expression
+                    CompileExpression(depth + 1);
+                }
+            }
+
+            // expressionList End
+            _tokenWriter.WriteTokenEnd(compUnit, depth);
         }
 
         //
@@ -547,6 +772,28 @@ namespace JackCompiler
                 _tokenizer.Advance();
             }
             else
+            {
+                throw new BadSyntaxException();
+            }
+            return result;
+        }
+
+        private Token SoftEatOp()
+        {
+            Token result = null;
+            if(ops.Contains(_tokenizer.CurrentToken.Value[0]))
+            {
+                result = _tokenizer.CurrentToken;
+                _tokenizer.Advance();
+            }
+
+            return result;
+        }
+
+        private Token EatOp()
+        {
+            Token result = SoftEatOp();
+            if (result == null)
             {
                 throw new BadSyntaxException();
             }

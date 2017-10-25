@@ -13,8 +13,8 @@ namespace JackCompiler
         private StreamReader _reader;
 
         public Token CurrentToken { get; private set; }
-
-
+        public Token NextToken { get; private set; }
+        
         //
         // Ctors / Dtors
         //
@@ -77,6 +77,13 @@ namespace JackCompiler
             char curChar = (char)_reader.Read(), nextChar = (char)_reader.Peek();
             bool commentBlock = false, isStringConstant = false;
 
+            if(NextToken != null)
+            {
+                CurrentToken = NextToken;
+                NextToken = null;
+                return;
+            }
+
             if (HasMoreTokens())
             {
                 for (; _reader.Peek() >= 0; curChar = (char)_reader.Read(), nextChar = (char)_reader.Peek())
@@ -90,7 +97,6 @@ namespace JackCompiler
                             case '\t':
                             case '\r':
                             case '\n':
-                                //_reader.Read();
                                 continue;
                         }
                     }
@@ -210,21 +216,26 @@ namespace JackCompiler
                         // Then we have an error - nothing to do for this ast
                         throw new Exception("Not a valid token");
                     }
-
                 }
-            }
-
-            if (CurrentToken == null)
-            {   // Error out?
-                CurrentToken = new Token
-                {
-                    TokenType = TokenType.NONE,
-                    Value = string.Empty
-                };
             }
 
         }
 
+        //
+        // Peek
+        public Token Peek()
+        {
+            if(NextToken == null)
+            {
+                var tmp = CurrentToken;
+                Advance();
+                NextToken = CurrentToken;
+                CurrentToken = tmp;
+                return NextToken;
+            }
+
+            return NextToken;
+        }
 
         
     }
