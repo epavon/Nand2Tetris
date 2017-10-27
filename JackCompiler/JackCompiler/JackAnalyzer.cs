@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace JackCompiler
 {
-    class Program
+    class JackAnalyzer
     {
         static void Main(string[] args)
         {
@@ -41,7 +41,7 @@ namespace JackCompiler
             string outputFile = inputFile.Remove(inputFile.IndexOf(".jack")) + ".xml";
 
             Tokenizer tokenizer = new Tokenizer(inputFile);
-            CompilationEngine compilationEngine = new CompilationEngine(tokenizer, new ConsoleTokenWriter());
+            CompilationEngine compilationEngine = new CompilationEngine(tokenizer, new XmlTokenWriter(outputFile));
             compilationEngine.CompileFile();
 
             Console.WriteLine("Done! Output File: " + outputFile);

@@ -1,4 +1,5 @@
 ﻿using JackCompiler.Contracts;
+using JackCompiler.Helpers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,32 +12,24 @@ namespace JackCompiler.Writer
     {
         public void WriteTokenStart(string compUnit, int depth)
         {
-            string initSpaces = GetSpacesDepth(depth);
+            string initSpaces = WriterHelper.GetSpacesDepth(depth);
             Console.WriteLine(initSpaces + "<" + compUnit + ">");
         }
 
         public void WriteTokenEnd(string compUnit, int depth)
         {
-            string initSpaces = GetSpacesDepth(depth);
+            string initSpaces = WriterHelper.GetSpacesDepth(depth);
             Console.WriteLine(initSpaces + "</" + compUnit + ">");
         }
 
         public void WriteTerminalToken(Token token, int depth)
         {
-            string initSpaces = GetSpacesDepth(depth);
+            string initSpaces = WriterHelper.GetSpacesDepth(depth);
             Console.Write(initSpaces + "<" + token.GetTokenTypeName() + ">");
             Console.Write(token.OutputValue);
             Console.WriteLine("</" + token.GetTokenTypeName() + ">");
         }
 
-        private string GetSpacesDepth(int depth)
-        {
-            string result = string.Empty;
-            for (int i = 0; i < depth*2; i++)
-            {
-                result += " ";
-            }
-            return result;
-        }
+        
     }
 }

@@ -18,9 +18,9 @@ namespace JackCompiler
             get 
             {
                 if (Value == "<")
-                    return "&lt";
+                    return "&lt;";
                 if (Value == ">")
-                    return "&gt";
+                    return "&gt;";
                 return Value;
             } 
         }

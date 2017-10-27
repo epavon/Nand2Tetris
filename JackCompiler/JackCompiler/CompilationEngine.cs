@@ -13,7 +13,6 @@ namespace JackCompiler
     {
         Tokenizer _tokenizer;
         ITokenWriter _tokenWriter;
-        int depth = 0;
 
         private readonly char[] ops = { '+', '-', '*', '/', '&','|', '<', '>', '=' };
 
@@ -33,11 +32,6 @@ namespace JackCompiler
 
         public void Dispose()
         {
-            if (_tokenWriter != null && _tokenWriter is IDisposable)
-            {
-                ((IDisposable)_tokenWriter).Dispose();
-            }
-
             if (_tokenizer != null)
             {
                 _tokenizer.Dispose();
@@ -55,6 +49,12 @@ namespace JackCompiler
         {
             _tokenizer.Advance();
             CompileClass(0);
+
+            // dispose of writer
+            if (_tokenWriter != null && _tokenWriter is IDisposable)
+            {
+                ((IDisposable)_tokenWriter).Dispose();
+            }
         }
 
         //

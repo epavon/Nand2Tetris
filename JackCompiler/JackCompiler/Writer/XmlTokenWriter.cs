@@ -1,4 +1,5 @@
 ﻿using JackCompiler.Contracts;
+using JackCompiler.Helpers;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -21,7 +22,7 @@ namespace JackCompiler
         {
             if (_streamWriter != null && _streamWriter.BaseStream != null)
             {
-                _streamWriter.Dispose();
+                _streamWriter.Close();
                 _streamWriter = null;
             }
         }
@@ -32,17 +33,22 @@ namespace JackCompiler
 
         public void WriteTokenStart(string compUnit, int depth)
         {
-            throw new NotImplementedException();
+            string initSpaces = WriterHelper.GetSpacesDepth(depth);
+            _streamWriter.WriteLine(initSpaces + "<" + compUnit + ">");
         }
 
         public void WriteTokenEnd(string compUnit, int depth)
         {
-            throw new NotImplementedException();
+            string initSpaces = WriterHelper.GetSpacesDepth(depth);
+            _streamWriter.WriteLine(initSpaces + "</" + compUnit + ">");
         }
 
         public void WriteTerminalToken(Token token, int depth)
         {
-            throw new NotImplementedException();
+            string initSpaces = WriterHelper.GetSpacesDepth(depth);
+            _streamWriter.Write(initSpaces + "<" + token.GetTokenTypeName() + "> ");
+            _streamWriter.Write(token.OutputValue);
+            _streamWriter.WriteLine(" </" + token.GetTokenTypeName() + ">");
         }
 
         
