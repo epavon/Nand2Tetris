@@ -51,6 +51,11 @@ namespace JackCompiler
         {
             string outputFile = folderName + "/" + folderName + ".asm";
 
+            foreach (var file in inputFiles)
+            {
+                var fileName = Path.GetFileName(file);
+                CompileFile(folderName + "/" + fileName);
+            }
             
         }
     }

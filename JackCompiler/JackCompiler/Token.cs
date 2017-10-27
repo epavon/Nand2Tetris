@@ -21,6 +21,8 @@ namespace JackCompiler
                     return "&lt;";
                 if (Value == ">")
                     return "&gt;";
+                if (Value == "&")
+                    return "&amp;";
                 return Value;
             } 
         }

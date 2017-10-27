@@ -83,7 +83,10 @@ namespace JackCompiler
             }
             
             // compile subroutineDec*
-            while(_tokenizer.CurrentToken != null && (_tokenizer.CurrentToken.GetKeywordType() == Types.KeywordType.METHOD || _tokenizer.CurrentToken.GetKeywordType() == Types.KeywordType.FUNCTION))
+            while(_tokenizer.CurrentToken != null 
+                && (_tokenizer.CurrentToken.GetKeywordType() == Types.KeywordType.METHOD 
+                    || _tokenizer.CurrentToken.GetKeywordType() == Types.KeywordType.FUNCTION
+                    || _tokenizer.CurrentToken.GetKeywordType() == Types.KeywordType.CONSTRUCTOR))
             {
                 CompileSubroutineDec(depth + 1);
             }
@@ -106,22 +109,22 @@ namespace JackCompiler
 
             // compile: 'static' | 'field'
             var varToken = SoftEat("field") ?? Eat("static");
-            _tokenWriter.WriteTerminalToken(varToken, depth);
+            _tokenWriter.WriteTerminalToken(varToken, depth + 1);
 
             // compile: type
             var typeToken = EatType();
-            _tokenWriter.WriteTerminalToken(typeToken, depth);
+            _tokenWriter.WriteTerminalToken(typeToken, depth + 1);
 
             // compile: varName (',' varName)*
             while(true)
             {
                 var varNameToken = EatIdentifier();
-                _tokenWriter.WriteTerminalToken(varNameToken, depth);
+                _tokenWriter.WriteTerminalToken(varNameToken, depth + 1);
 
                 if(_tokenizer.CurrentToken.Value == ",")
                 {
                     var commaToken = Eat(",");
-                    _tokenWriter.WriteTerminalToken(commaToken, depth);
+                    _tokenWriter.WriteTerminalToken(commaToken, depth + 1);
                     continue;
                 }
                 break;
@@ -129,7 +132,7 @@ namespace JackCompiler
 
             // compile: ';'
             var semiColonToken = Eat(";");
-            _tokenWriter.WriteTerminalToken(semiColonToken, depth);
+            _tokenWriter.WriteTerminalToken(semiColonToken, depth + 1);
 
             // classVarDec End
             _tokenWriter.WriteTokenEnd(compUnit, depth);
@@ -366,10 +369,6 @@ namespace JackCompiler
             var rightBraceToken = Eat("}");
             _tokenWriter.WriteTerminalToken(rightBraceToken, depth + 1);
 
-            // compile: '('
-            leftParenToken = Eat("(");
-            _tokenWriter.WriteTerminalToken(leftParenToken, depth + 1);
-
             // compile: ('else' '{' statements '}' )?
             if(_tokenizer.CurrentToken.Value == "else")
             {
@@ -388,9 +387,6 @@ namespace JackCompiler
                 rightBraceToken = Eat("}");
                 _tokenWriter.WriteTerminalToken(rightBraceToken, depth + 1);
 
-                // compile: ')'
-                rightParenToken = Eat(")");
-                _tokenWriter.WriteTerminalToken(rightParenToken, depth + 1);
             }
 
             // ifStatement End
@@ -661,6 +657,7 @@ namespace JackCompiler
         public void CompileSubroutineCall(int depth)
         {
             var nextToken = _tokenizer.Peek();
+            // compile: subroutineName '(' expressionList ')'
             if (nextToken.Value == "(")
             {
                 // compile: subroutineName
@@ -671,8 +668,8 @@ namespace JackCompiler
                 var leftParenToken = Eat("(");
                 _tokenWriter.WriteTerminalToken(leftParenToken, depth);
 
-                // compile: expression
-                CompileExpression(depth);
+                // compile: expressionList
+                CompileExpressionList(depth);
 
                 // compile: ')'
                 var rightParenToken = Eat(")");
