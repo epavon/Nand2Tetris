@@ -83,7 +83,7 @@ namespace JackCompiler
             }
             
             // compile subroutineDec*
-            while(_tokenizer.CurrentToken.GetKeywordType() == Types.KeywordType.METHOD || _tokenizer.CurrentToken.GetKeywordType() == Types.KeywordType.FUNCTION)
+            while(_tokenizer.CurrentToken != null && (_tokenizer.CurrentToken.GetKeywordType() == Types.KeywordType.METHOD || _tokenizer.CurrentToken.GetKeywordType() == Types.KeywordType.FUNCTION))
             {
                 CompileSubroutineDec(depth + 1);
             }
@@ -169,6 +169,9 @@ namespace JackCompiler
 
             // compile: subroutineBody
             CompileSubroutineBody(depth + 1);
+
+            // subroutineDec End
+            _tokenWriter.WriteTokenEnd(compUnit, depth);
         }
 
         //
@@ -508,7 +511,27 @@ namespace JackCompiler
         // 'return' expression? ';'
         public void CompileReturnStatement(int depth)
         {
+            string compUnit = "returnStatement";
 
+            // returnStatement Start
+            _tokenWriter.WriteTokenStart(compUnit, depth);
+
+            // compile: 'return'
+            var returnToken = Eat("return");
+            _tokenWriter.WriteTerminalToken(returnToken, depth + 1);
+
+            // compile: expression?
+            if(_tokenizer.CurrentToken.Value != ";")
+            {
+                CompileExpression(depth + 1);
+            }
+
+            // compile: ';'
+            var semiColonToken = Eat(";");
+            _tokenWriter.WriteTerminalToken(semiColonToken, depth + 1);
+
+            // returnStatement End
+            _tokenWriter.WriteTokenEnd(compUnit, depth);
         }
 
         
@@ -637,7 +660,7 @@ namespace JackCompiler
         // subroutineCall: subroutineName '(' expressionList ')' | (className | varName) '.' subroutineName '(' expressionList '}'
         public void CompileSubroutineCall(int depth)
         {
-            var nextToken = _tokenizer.NextToken;
+            var nextToken = _tokenizer.Peek();
             if (nextToken.Value == "(")
             {
                 // compile: subroutineName

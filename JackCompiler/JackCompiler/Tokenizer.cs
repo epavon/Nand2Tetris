@@ -82,12 +82,10 @@ namespace JackCompiler
                 return;
             }
 
-            char curChar = (char)_reader.Read(), nextChar = (char)_reader.Peek();
             bool commentBlock = false, isStringConstant = false;
-
             if (HasMoreTokens())
             {
-                for (; _reader.Peek() >= 0; curChar = (char)_reader.Read(), nextChar = (char)_reader.Peek())
+                for (char curChar = ' ', nextChar = ' '; _reader.Peek() >= 0; curChar = (char)_reader.Read(), nextChar = (char)_reader.Peek())
                 {
                     // Skip whitespace
                     if (!isStringConstant)
