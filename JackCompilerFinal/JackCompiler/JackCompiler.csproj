@@ -47,16 +47,23 @@
     <Compile Include="CompilationEngine.cs" />
     <Compile Include="Exceptions\BadSyntaxException.cs" />
     <Compile Include="Helpers\WriterHelper.cs" />
+    <Compile Include="SymbolTableManager.cs" />
+    <Compile Include="Models\SymbolTableItem.cs" />
+    <Compile Include="Models\Types\VarKindType.cs" />
+    <Compile Include="Models\Types\VarScopeType.cs" />
+    <Compile Include="Models\Types\VarTypeType.cs" />
     <Compile Include="Writer\ConsoleTokenWriter.cs" />
+    <Compile Include="Writer\Contracts\ICodeWriter.cs" />
     <Compile Include="Writer\Contracts\ITokenWriter.cs" />
     <Compile Include="JackAnalyzer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SettingsReader.cs" />
     <Compile Include="Token.cs" />
     <Compile Include="Helpers\IdentifierHelper.cs" />
-    <Compile Include="Types\KeywordType.cs" />
-    <Compile Include="Types\TokenType.cs" />
+    <Compile Include="Models\Types\KeywordType.cs" />
+    <Compile Include="Models\Types\TokenType.cs" />
     <Compile Include="Tokenizer.cs" />
+    <Compile Include="Writer\JackCodeWriter.cs" />
     <Compile Include="Writer\XmlTokenWriter.cs" />
   </ItemGroup>
   <ItemGroup>
