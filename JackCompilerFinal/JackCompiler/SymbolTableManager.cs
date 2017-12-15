@@ -20,6 +20,7 @@ namespace JackCompiler
         public static void AddToClassSymbolTable(SymbolTableItem symbolTableItem)
         {
             var symbolTableItemNum = SymbolTable[VarScopeType.CLASS_LEVEL].Count(sti => sti.Kind == symbolTableItem.Kind);
+            symbolTableItem.Number = symbolTableItemNum;
             SymbolTable[VarScopeType.CLASS_LEVEL].Add(symbolTableItem);
         }
 
@@ -31,6 +32,7 @@ namespace JackCompiler
         public static void AddToSubroutineSymbolTable(SymbolTableItem symbolTableItem)
         {
             var symbolTableItemNum = SymbolTable[VarScopeType.SUBROUTINE_LEVEL].Count(sti => sti.Kind == symbolTableItem.Kind);
+            symbolTableItem.Number = symbolTableItemNum;
             SymbolTable[VarScopeType.SUBROUTINE_LEVEL].Add(symbolTableItem);
         }
 

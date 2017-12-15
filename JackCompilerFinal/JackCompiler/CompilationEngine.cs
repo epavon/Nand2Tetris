@@ -1,5 +1,6 @@
 ﻿using JackCompiler.Contracts;
 using JackCompiler.Exceptions;
+using JackCompiler.Models;
 using JackCompiler.Types;
 using JackCompiler.Writer.Contracts;
 using System;
@@ -123,6 +124,7 @@ namespace JackCompiler
             while(true)
             {
                 var varNameToken = EatIdentifier();
+                SymbolTableManager.AddToClassSymbolTable(new SymbolTableItem { Kind = stVarKind, Name = varNameToken.Value, Scope = VarScopeType.CLASS_LEVEL, Type = (VarTypeType)Enum.Parse(typeof(VarTypeType), varType.Value.ToUpper()) });
 
                 if(_tokenizer.CurrentToken.Value == ",")
                 {

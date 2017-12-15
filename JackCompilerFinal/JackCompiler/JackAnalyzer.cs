@@ -38,7 +38,7 @@ namespace JackCompiler
 
         static void CompileFile(string inputFile)
         {
-            string outputFile = inputFile.Remove(inputFile.IndexOf(".jack")) + ".xml";
+            string outputFile = inputFile.Remove(inputFile.IndexOf(".jack")) + ".vm";
 
             Tokenizer tokenizer = new Tokenizer(inputFile);
             CompilationEngine compilationEngine = new CompilationEngine(tokenizer, new XmlTokenWriter(outputFile));

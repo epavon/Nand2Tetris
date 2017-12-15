@@ -9,6 +9,7 @@ namespace JackCompiler.Models
 {
     public class SymbolTableItem
     {
+        public int Number { get; set; }
         public string Name { get; set; }
         public VarTypeType Type { get; set; }
         public VarKindType Kind { get; set; }
