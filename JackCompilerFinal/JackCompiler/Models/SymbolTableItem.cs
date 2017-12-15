@@ -11,7 +11,7 @@ namespace JackCompiler.Models
     {
         public int Number { get; set; }
         public string Name { get; set; }
-        public VarTypeType Type { get; set; }
+        public string Type { get; set; }
         public VarKindType Kind { get; set; }
         public VarScopeType Scope { get; set; }
     }

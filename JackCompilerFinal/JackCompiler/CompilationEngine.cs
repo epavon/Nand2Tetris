@@ -95,7 +95,7 @@ namespace JackCompiler
                     || _tokenizer.CurrentToken.GetKeywordType() == Types.KeywordType.FUNCTION
                     || _tokenizer.CurrentToken.GetKeywordType() == Types.KeywordType.CONSTRUCTOR))
             {
-                CompileSubroutineDec(depth + 1);
+                CompileSubroutineDec(depth + 1, identifierToken.Value);
             }
             
             // compile '{'
@@ -124,7 +124,7 @@ namespace JackCompiler
             while(true)
             {
                 var varNameToken = EatIdentifier();
-                SymbolTableManager.AddToClassSymbolTable(new SymbolTableItem { Kind = stVarKind, Name = varNameToken.Value, Scope = VarScopeType.CLASS_LEVEL, Type = (VarTypeType)Enum.Parse(typeof(VarTypeType), varType.Value.ToUpper()) });
+                SymbolTableManager.AddToClassSymbolTable(new SymbolTableItem { Kind = stVarKind, Name = varNameToken.Value, Scope = VarScopeType.CLASS_LEVEL, Type = varType.Value });
 
                 if(_tokenizer.CurrentToken.Value == ",")
                 {
@@ -143,7 +143,7 @@ namespace JackCompiler
 
         //
         // ('constructor'|'function'|'method') ('void'|type) subtroutineName '(' parameterList ')' subroutineBody
-        public void CompileSubroutineDec(int depth)
+        public void CompileSubroutineDec(int depth, string className)
         {
             string compUnit = "subroutineDec";
 
@@ -153,6 +153,7 @@ namespace JackCompiler
             // compile: ('constructor'|'function'|'method')
             var subToken = EatSubroutine();
             _tokenWriter.WriteTerminalToken(subToken, depth + 1);
+            SymbolTableManager.AddToSubroutineSymbolTable(new SymbolTableItem { Name = "this", Type = className, Scope = VarScopeType.SUBROUTINE_LEVEL, Kind = VarKindType.ARGUMENT} );
 
             // compile: ('void'|type)
             var subTypeToken = SoftEatType() ?? Eat("void");
@@ -202,6 +203,9 @@ namespace JackCompiler
                 // compile: varName
                 var varNameToken = EatIdentifier();
                 _tokenWriter.WriteTerminalToken(varNameToken, depth + 1);
+
+                // Add to symbol table
+                SymbolTableManager.AddToSubroutineSymbolTable(new SymbolTableItem { Kind = VarKindType.ARGUMENT, Scope = VarScopeType.SUBROUTINE_LEVEL, Type = typeToken.Value, Name = varNameToken.Value });
 
                 // compile: ','
                 if(_tokenizer.CurrentToken.Value == ",")
@@ -274,6 +278,9 @@ namespace JackCompiler
             var varNameToken = EatIdentifier();
             _tokenWriter.WriteTerminalToken(varNameToken, depth + 1);
 
+            // Add to symbol table
+            SymbolTableManager.AddToSubroutineSymbolTable(new SymbolTableItem { Kind = VarKindType.LOCAL, Name = varNameToken.Value, Scope = VarScopeType.SUBROUTINE_LEVEL, Type = typeToken.Value });
+
             // compile: (',' varName)*
             while(_tokenizer.CurrentToken.Value == ",")
             {
@@ -284,6 +291,9 @@ namespace JackCompiler
                 // compile varName
                 varNameToken = EatIdentifier();
                 _tokenWriter.WriteTerminalToken(varNameToken, depth + 1);
+
+                // Add to symbol table
+                SymbolTableManager.AddToSubroutineSymbolTable(new SymbolTableItem { Kind = VarKindType.LOCAL, Name = varNameToken.Value, Scope = VarScopeType.SUBROUTINE_LEVEL, Type = typeToken.Value });
             }
 
             // compile: ';'
