@@ -16,7 +16,7 @@ namespace JackCompiler
     {
         Tokenizer _tokenizer;
         ITokenWriter _tokenWriter;
-        ICodeWriter _codeWriter;
+        IVmWriter _codeWriter;
 
         private readonly char[] ops = { '+', '-', '*', '/', '&','|', '<', '>', '=' };
 
@@ -27,6 +27,19 @@ namespace JackCompiler
         {
             _tokenizer = tokenizer;
             _tokenWriter = tokenWriter;
+        }
+
+        public CompilationEngine(Tokenizer tokenizer, IVmWriter codeWriter)
+        {
+            this._tokenizer = tokenizer;
+            this._codeWriter = codeWriter;
+        }
+
+        public CompilationEngine(Tokenizer tokenizer, ITokenWriter tokenWriter, IVmWriter codeWriter)
+        {
+            this._tokenizer = tokenizer;
+            this._tokenWriter = tokenWriter;
+            this._codeWriter = codeWriter;
         }
 
         ~CompilationEngine()
@@ -111,24 +124,32 @@ namespace JackCompiler
         public void CompileClassVarDec(int depth)
         {
             string compUnit = "classVarDec";
-            // classVarDec Start
+			
+			// classVarDec Start
+            _tokenWriter.WriteTokenStart(compUnit, depth);
 
             // compile: 'static' | 'field'
             var varKind = SoftEat("field") ?? Eat("static");
+			_tokenWriter.WriteTerminalToken(varKind, depth + 1);
             var stVarKind = (VarKindType)Enum.Parse(typeof(VarKindType), varKind.Value.ToUpper());
 
             // compile: type
-            var varType = EatType();
+            var typeToken = EatType();
+            _tokenWriter.WriteTerminalToken(typeToken, depth + 1);
 
             // compile: varName (',' varName)*
             while(true)
             {
                 var varNameToken = EatIdentifier();
-                SymbolTableManager.AddToClassSymbolTable(new SymbolTableItem { Kind = stVarKind, Name = varNameToken.Value, Scope = VarScopeType.CLASS_LEVEL, Type = varType.Value });
+				_tokenWriter.WriteTerminalToken(varNameToken, depth + 1);
+				
+                // Add to symbol table
+                SymbolTableManager.AddToClassSymbolTable(new SymbolTableItem { Kind = stVarKind, Name = varNameToken.Value, Scope = VarScopeType.CLASS_LEVEL, Type = typeToken.Value });
 
                 if(_tokenizer.CurrentToken.Value == ",")
                 {
                     var commaToken = Eat(",");
+					_tokenWriter.WriteTerminalToken(commaToken, depth + 1);
                     continue;
                 }
                 break;
@@ -136,9 +157,10 @@ namespace JackCompiler
 
             // compile: ';'
             var semiColonToken = Eat(";");
+            _tokenWriter.WriteTerminalToken(semiColonToken, depth + 1);
 
             // classVarDec End
-
+            _tokenWriter.WriteTokenEnd(compUnit, depth);
         }
 
         //
@@ -146,14 +168,20 @@ namespace JackCompiler
         public void CompileSubroutineDec(int depth, string className)
         {
             string compUnit = "subroutineDec";
-
-            // subroutineDec Start
+			
+			// subroutineDec Start
             _tokenWriter.WriteTokenStart(compUnit, depth);
+
+            // Reset SymbolTable
+            SymbolTableManager.ResetSubroutineSymbolTable();
 
             // compile: ('constructor'|'function'|'method')
             var subToken = EatSubroutine();
             _tokenWriter.WriteTerminalToken(subToken, depth + 1);
-            SymbolTableManager.AddToSubroutineSymbolTable(new SymbolTableItem { Name = "this", Type = className, Scope = VarScopeType.SUBROUTINE_LEVEL, Kind = VarKindType.ARGUMENT} );
+            if (subToken.Value != "function")
+            {
+                SymbolTableManager.AddToSubroutineSymbolTable(new SymbolTableItem { Name = "this", Type = className, Scope = VarScopeType.SUBROUTINE_LEVEL, Kind = VarKindType.ARGUMENT });
+            }
 
             // compile: ('void'|type)
             var subTypeToken = SoftEatType() ?? Eat("void");
@@ -422,6 +450,7 @@ namespace JackCompiler
             // compile: varName
             var varNameToken = EatIdentifier();
             _tokenWriter.WriteTerminalToken(varNameToken, depth + 1);
+            var vasAssignedSymbolTableItem = SymbolTableManager.Find(varNameToken.Value);
 
             // compile: ('[' expression ']')?
             if(_tokenizer.CurrentToken.Value == "[")
@@ -444,6 +473,9 @@ namespace JackCompiler
 
             // compile: expression
             CompileExpression(depth + 1);
+
+            // pop varAssigned
+
 
             // compile: ';'
             var semiColonToken = Eat(";");
@@ -547,15 +579,17 @@ namespace JackCompiler
 
         //
         // expression : term (op term)?
-        public void CompileExpression(int depth)
+        public void CompileExpression(int depth) //@TODO: Build an expression object and then write it using the algorithm..
         {
             string compUnit = "expression";
 
             // expression Start
             _tokenWriter.WriteTokenStart(compUnit, depth);
 
-            // compile: term
-            CompileTerm(depth + 1);
+            // compile: term -> push term
+            var termCU = CompileTerm(depth + 1);
+
+
 
             // compile: (op term)?
             if(ops.Contains(_tokenizer.CurrentToken.Value[0]))
@@ -574,22 +608,25 @@ namespace JackCompiler
 
         //
         // term : integerConstant | stringConstant | keywordConstant | unaryOp term | '(' expression ')' | varName | varName '[' expression ']' | subroutineCall 
-        public void CompileTerm(int depth)
+        public CompilationUnit CompileTerm(int depth)
         {
             string compUnit = "term";
+            CompilationUnit result = new CompilationUnit { Name = compUnit, CompUnits = new List<Token>() };
 
             // term Start
             _tokenWriter.WriteTokenStart(compUnit, depth);
 
             // compile: integerConstant
             if(_tokenizer.CurrentToken.TokenType == TokenType.INT_COSNT)
-            {   
+            {
+                result.CompUnits.Add(_tokenizer.CurrentToken);
                 _tokenWriter.WriteTerminalToken(_tokenizer.CurrentToken, depth + 1);
                 _tokenizer.Advance();
             }
-            // compile: integerConstant
+            // compile: stringConstant
             else if(_tokenizer.CurrentToken.TokenType == TokenType.STRING_CONST)
-            {  
+            {
+                result.CompUnits.Add(_tokenizer.CurrentToken);
                 _tokenWriter.WriteTerminalToken(_tokenizer.CurrentToken, depth + 1);
                 _tokenizer.Advance();
             }
@@ -598,7 +635,8 @@ namespace JackCompiler
                     ||  _tokenizer.CurrentToken.GetKeywordType() == Types.KeywordType.FALSE
                     ||  _tokenizer.CurrentToken.GetKeywordType() == Types.KeywordType.NULL
                     ||  _tokenizer.CurrentToken.GetKeywordType() == Types.KeywordType.THIS)
-            {   
+            {
+                
                 _tokenWriter.WriteTerminalToken(_tokenizer.CurrentToken, depth + 1);
                 _tokenizer.Advance();
             }
@@ -606,6 +644,7 @@ namespace JackCompiler
             else if(_tokenizer.CurrentToken.Value == "~" || _tokenizer.CurrentToken.Value == "-")
             {
                 // compile: unaryOp
+                result.CompUnits.Add(_tokenizer.CurrentToken);
                 _tokenWriter.WriteTerminalToken(_tokenizer.CurrentToken, depth + 1);
                 _tokenizer.Advance();
                 // compile: term
@@ -635,6 +674,7 @@ namespace JackCompiler
                 {
                     // compile: varName
                     var varNameToken = EatIdentifier();
+                    result.CompUnits.Add(varNameToken);
                     _tokenWriter.WriteTerminalToken(varNameToken, depth + 1);
 
                     // compile: '['
@@ -663,6 +703,8 @@ namespace JackCompiler
 
             // term End
             _tokenWriter.WriteTokenEnd(compUnit, depth);
+
+            return result;
         }        
 
         //
