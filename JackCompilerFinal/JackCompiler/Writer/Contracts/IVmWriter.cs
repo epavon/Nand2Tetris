@@ -17,7 +17,7 @@ namespace JackCompiler.Writer.Contracts
         void WriteCall(string name, int nArgs);
         void WriteFunction(string name, int nLocals);
         void WriteReturn();
-
+        void WriteOp(Token opToken);
 
     }
 }

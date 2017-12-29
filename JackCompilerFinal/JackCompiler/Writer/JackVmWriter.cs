@@ -70,5 +70,10 @@ namespace JackCompiler.Writer
         {
             throw new NotImplementedException();
         }
+
+        public void WriteOp(Token opToken)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
