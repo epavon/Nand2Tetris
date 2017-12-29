@@ -58,7 +58,7 @@ namespace JackCompiler.Writer
 
         public void WriteCall(string name, int nArgs)
         {
-            throw new NotImplementedException();
+            _streamWriter.WriteLine("call " + name + " " + nArgs);
         }
 
         public void WriteFunction(string name, int nLocals)
