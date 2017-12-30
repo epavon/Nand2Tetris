@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace JackCompiler.Writer
 {
-    public class JackVmWriter : IVmWriter
+    public class JackVmWriter : IVmWriter, IDisposable
     {
         StreamWriter _streamWriter;
 
@@ -28,32 +28,32 @@ namespace JackCompiler.Writer
 
         public void WritePush(string segment, int index)
         {
-            throw new NotImplementedException();
+            _streamWriter.WriteLine("push " + segment + " " + index);
         }
 
         public void WritePop(string segment, int index)
         {
-            throw new NotImplementedException();
+            _streamWriter.WriteLine("pop " + segment + " " + index);
         }
 
         public void WriterArithmetic(string command)
         {
-            throw new NotImplementedException();
+            _streamWriter.WriteLine(command);
         }
 
         public void WriteLabel(string label)
         {
-            throw new NotImplementedException();
+            _streamWriter.WriteLine(label);
         }
 
         public void WriteGoto(string label)
         {
-            throw new NotImplementedException();
+            _streamWriter.WriteLine("goto " + label);
         }
 
         public void WriteIf(string label)
         {
-            throw new NotImplementedException();
+            _streamWriter.WriteLine("if-goto " + label);
         }
 
         public void WriteCall(string name, int nArgs)
@@ -73,7 +73,23 @@ namespace JackCompiler.Writer
 
         public void WriteOp(Token opToken)
         {
-            throw new NotImplementedException();
+            string opCommand = string.Empty;
+            switch(opToken.Value)
+            {
+                case "+":
+                    opCommand = "add";
+                    break;
+                case "-":
+                    opCommand = "sub";
+                    break;
+                case "*":
+                    opCommand = "call Math.multiply 2";
+                    break;
+                default:
+                    break;
+
+            }
+            _streamWriter.WriteLine(opCommand);
         }
     }
 }
