@@ -63,7 +63,7 @@ namespace JackCompiler.Writer
 
         public void WriteFunction(string name, int nLocals)
         {
-            throw new NotImplementedException();
+            _streamWriter.WriteLine("function " + name + " " + nLocals);
         }
 
         public void WriteReturn()

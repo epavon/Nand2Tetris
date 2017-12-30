@@ -141,6 +141,8 @@ namespace JackCompiler
             // Reset SymbolTable
             SymbolTableManager.ResetSubroutineSymbolTable();
 
+            
+
             // compile: ('constructor'|'function'|'method')
             var subToken = EatSubroutine();
             if (subToken.Value != "function")
@@ -153,6 +155,7 @@ namespace JackCompiler
 
             // compile: subtroutineName
             var subNameToken = EatIdentifier();
+            
 
             // compile: '('
             var leftParenToken = Eat("(");
