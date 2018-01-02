@@ -141,8 +141,6 @@ namespace JackCompiler
             // Reset SymbolTable
             SymbolTableManager.ResetSubroutineSymbolTable();
 
-            
-
             // compile: ('constructor'|'function'|'method')
             var subToken = EatSubroutine();
             if (subToken.Value != "function")
@@ -155,7 +153,6 @@ namespace JackCompiler
 
             // compile: subtroutineName
             var subNameToken = EatIdentifier();
-            
 
             // compile: '('
             var leftParenToken = Eat("(");
@@ -167,7 +164,8 @@ namespace JackCompiler
             var rightParenToken = Eat(")");
 
             // compile: subroutineBody
-            CompileSubroutineBody(depth + 1);
+            int subLocals = CompileSubroutineBody(depth + 1);
+            _vmWriter.WriteFunction(subNameToken.Value, subLocals);
 
         }
 
@@ -186,11 +184,9 @@ namespace JackCompiler
             {
                 // compile: type
                 var typeToken = EatType();
-                //_tokenWriter.WriteTerminalToken(typeToken, depth + 1);
 
                 // compile: varName
                 var varNameToken = EatIdentifier();
-                //_tokenWriter.WriteTerminalToken(varNameToken, depth + 1);
 
                 // Add to symbol table
                 SymbolTableManager.AddToSubroutineSymbolTable(new SymbolTableItem { Kind = VarKindType.ARGUMENT, Scope = VarScopeType.SUBROUTINE_LEVEL, Type = typeToken.Value, Name = varNameToken.Value });
@@ -214,9 +210,9 @@ namespace JackCompiler
 
         //
         // subroutineBody: '{' varDec* statements '}'
-        public void CompileSubroutineBody(int depth)
+        public int CompileSubroutineBody(int depth)
         {
-            string compUnit = "subroutineBody";
+            int subLocals = 0;
 
             // compile: '{'
             var leftBraceToken = Eat("{");
@@ -224,7 +220,7 @@ namespace JackCompiler
             // compile: varDec*
             while(_tokenizer.CurrentToken.Value == "var")
             {
-                CompileVarDec(depth + 1);
+                subLocals = CompileVarDec(depth + 1);
             }
 
             // compile: statements
@@ -233,12 +229,14 @@ namespace JackCompiler
             // compile: '}'
             var rightBraceToken = Eat("}");
 
+            return subLocals;
         }
 
         //
         // varDec: 'var' type varName (',' varName)* ';'
-        public void CompileVarDec(int depth)
+        public int CompileVarDec(int depth)
         {
+            int subLocals = 0;
             string compUnit = "varDec";
 
             // compile: 'var'
@@ -252,6 +250,7 @@ namespace JackCompiler
 
             // Add to symbol table
             SymbolTableManager.AddToSubroutineSymbolTable(new SymbolTableItem { Kind = VarKindType.LOCAL, Name = varNameToken.Value, Scope = VarScopeType.SUBROUTINE_LEVEL, Type = typeToken.Value });
+            subLocals++;
 
             // compile: (',' varName)*
             while(_tokenizer.CurrentToken.Value == ",")
@@ -264,10 +263,12 @@ namespace JackCompiler
 
                 // Add to symbol table
                 SymbolTableManager.AddToSubroutineSymbolTable(new SymbolTableItem { Kind = VarKindType.LOCAL, Name = varNameToken.Value, Scope = VarScopeType.SUBROUTINE_LEVEL, Type = typeToken.Value });
+                subLocals++;
             }
 
             // compile: ';'
             var semiColonToken = Eat(";");
+            return subLocals;
         }
 
         //
