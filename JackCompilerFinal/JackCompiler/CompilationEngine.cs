@@ -16,6 +16,7 @@ namespace JackCompiler
     {
         Tokenizer _tokenizer;
         IVmWriter _vmWriter;
+        private string className;
 
         private readonly char[] ops = { '+', '-', '*', '/', '&','|', '<', '>', '=' };
 
@@ -75,6 +76,7 @@ namespace JackCompiler
             
             // compile className
             var identifierToken = EatIdentifier();
+            className = identifierToken.Value;
             
             // compile '{'
             var leftBraceToken = Eat("{");
@@ -164,8 +166,10 @@ namespace JackCompiler
             var rightParenToken = Eat(")");
 
             // compile: subroutineBody
-            int subLocals = CompileSubroutineBody(depth + 1);
-            _vmWriter.WriteFunction(subNameToken.Value, subLocals);
+            CompileSubroutineBody(depth + 1, subNameToken.Value);
+
+            // write to vm file
+            //_vmWriter.WriteFunction(subNameToken.Value, subLocals);
 
         }
 
@@ -210,7 +214,7 @@ namespace JackCompiler
 
         //
         // subroutineBody: '{' varDec* statements '}'
-        public int CompileSubroutineBody(int depth)
+        public void CompileSubroutineBody(int depth, string subName)
         {
             int subLocals = 0;
 
@@ -222,14 +226,13 @@ namespace JackCompiler
             {
                 subLocals = CompileVarDec(depth + 1);
             }
+            _vmWriter.WriteFunction(string.Format("{0}.{1}", className, subName), subLocals);
 
             // compile: statements
             CompileStatements(depth + 1);
 
             // compile: '}'
             var rightBraceToken = Eat("}");
-
-            return subLocals;
         }
 
         //
@@ -237,7 +240,6 @@ namespace JackCompiler
         public int CompileVarDec(int depth)
         {
             int subLocals = 0;
-            string compUnit = "varDec";
 
             // compile: 'var'
             var varToken = Eat("var");
@@ -307,8 +309,6 @@ namespace JackCompiler
                 break;
             }
 
-            // statements End
-            //_tokenWriter.WriteTokenEnd(compUnit, depth);
         }
 
         //
