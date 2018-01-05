@@ -168,9 +168,6 @@ namespace JackCompiler
             // compile: subroutineBody
             CompileSubroutineBody(depth + 1, subNameToken.Value);
 
-            // write to vm file
-            //_vmWriter.WriteFunction(subNameToken.Value, subLocals);
-
         }
 
         //
@@ -361,14 +358,12 @@ namespace JackCompiler
         // letStatement: 'let' varName ('[' expression ']')? '=' expression ';'
         public void CompileLetStatement(int depth)
         {
-            string compUnit = "letStatement";
-
             // compile: 'let'
             var letToken = Eat("let");
 
             // compile: varName
             var varNameToken = EatIdentifier();
-            var vasAssignedSymbolTableItem = SymbolTableManager.Find(varNameToken.Value);
+            var varAssignedSymbolTableItem = SymbolTableManager.Find(varNameToken.Value);
 
             // compile: ('[' expression ']')?
             if(_tokenizer.CurrentToken.Value == "[")
@@ -390,7 +385,7 @@ namespace JackCompiler
             CompileExpression(depth + 1);
 
             // pop varAssigned
-
+            _vmWriter.WritePop(varAssignedSymbolTableItem.Kind.ToString(), varAssignedSymbolTableItem.Number);
 
             // compile: ';'
             var semiColonToken = Eat(";");
@@ -430,8 +425,6 @@ namespace JackCompiler
         // doStatement: 'do' subroutineCall ';'
         public void CompileDoStatement(int depth)
         {
-            string compUnit = "doStatement";
-
             // compile: 'do'
             var doToken = Eat("do");
 
@@ -494,7 +487,7 @@ namespace JackCompiler
             CompilationUnit result = new CompilationUnit { Name = compUnit, CompUnits = new List<Token>() };
 
             // compile: integerConstant
-            if(_tokenizer.CurrentToken.TokenType == TokenType.INT_COSNT)
+            if(_tokenizer.CurrentToken.TokenType == TokenType.INT_CONST)
             {
                 _vmWriter.WritePush("constant", Convert.ToInt32(_tokenizer.CurrentToken.Value));
                 _tokenizer.Advance();
@@ -581,77 +574,84 @@ namespace JackCompiler
         // subroutineCall: subroutineName '(' expressionList ')' | (className | varName) '.' subroutineName '(' expressionList '}'
         public void CompileSubroutineCall(int depth)
         {
-            var sbSubName = SymbolTableManager.Find(_tokenizer.CurrentToken.Value);
+            int args = 0;
+            string sbSubName = string.Empty;
             var nextToken = _tokenizer.Peek();
             // compile: subroutineName '(' expressionList ')'
             if (nextToken.Value == "(")
             {
                 // compile: subroutineName
                 var subName = EatIdentifier();
+                sbSubName = subName.Value;
 
                 // compile: '('
                 var leftParenToken = Eat("(");
 
                 // compile: expressionList
-                CompileExpressionList(depth);
+                args = CompileExpressionList(depth) + 1;
 
                 // compile: ')'
                 var rightParenToken = Eat(")");
-
-                // write call
-                _vmWriter.WriteCall(sbSubName.Name, 0);
             }
             else if (nextToken.Value == ".")
             {
                 // compile: (className | varName)
                 var nameToken = EatIdentifier();
+                var sbClass = SymbolTableManager.Find(nameToken.Value);
+                if(sbClass == null)
+                {
+                    sbSubName = nameToken.Value;
+                }
+                else
+                {
+                    sbSubName = nameToken.Value;
+                }
 
                 // compile '.'
                 var dotToken = Eat(".");
+                sbSubName += dotToken.Value;
 
                 // compile: subroutineName
                 var subNameToken = EatIdentifier();
-
-                // modify sub name
-                
+                sbSubName += subNameToken.Value;
 
                 // compile: '('
                 var leftParenToken = Eat("(");
 
                 // compile: expression
-                CompileExpressionList(depth);
+                args = CompileExpressionList(depth);
 
                 // compile: ')'
                 var rightParenToken = Eat(")");
             }
+
+            // write call
+            _vmWriter.WriteCall(sbSubName, args);
         }
 
         //
         // expressionList: (expression (',' expression)* )?
-        public void CompileExpressionList(int depth)
+        public int CompileExpressionList(int depth)
         {
-            string compUnit = "expressionList";
-
-            // expressionList Start
-            //_tokenWriter.WriteTokenStart(compUnit, depth);
+            int expressionCount = 0;
 
             // compile: (expression (',' expression)* )?
             if(_tokenizer.CurrentToken.Value != ")")
             {
                 CompileExpression(depth + 1);
+                expressionCount++;
                 while(_tokenizer.CurrentToken.Value == ",")
                 {
                     // compile: ','
                     var commaToken = Eat(",");
-                    //_tokenWriter.WriteTerminalToken(commaToken, depth + 1);
 
                     // compile: expression
                     CompileExpression(depth + 1);
+                    expressionCount++;
                 }
             }
 
-            // expressionList End
-            //_tokenWriter.WriteTokenEnd(compUnit, depth);
+            return expressionCount;
         }
 
         /////////////////////////////////////////////

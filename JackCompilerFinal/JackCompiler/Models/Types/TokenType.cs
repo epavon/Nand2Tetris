@@ -11,7 +11,7 @@ namespace JackCompiler
         NONE,
         KEYWORD,
         SYMBOL,
-        INT_COSNT,
+        INT_CONST,
         STRING_CONST,
         IDENTIFIER
     }

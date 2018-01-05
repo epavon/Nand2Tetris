@@ -23,7 +23,7 @@ namespace JackCompiler
             if (compUnits.Count == 1)
             {
                 Token token = compUnits[0];
-                if (token.TokenType == TokenType.INT_COSNT)
+                if (token.TokenType == TokenType.INT_CONST)
                 {
                     _vmWriter.WritePush("constant", Convert.ToInt32(token.Value));
                 }

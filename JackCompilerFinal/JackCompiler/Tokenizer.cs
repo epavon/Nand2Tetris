@@ -196,7 +196,7 @@ namespace JackCompiler
                             CurrentToken = new Token
                             {
                                 Value = num.ToString(),
-                                TokenType = TokenType.INT_COSNT
+                                TokenType = TokenType.INT_CONST
                             };
                             break;
                         }

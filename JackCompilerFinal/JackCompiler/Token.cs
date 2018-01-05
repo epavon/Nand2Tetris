@@ -52,7 +52,7 @@ namespace JackCompiler
             {
                 case JackCompiler.TokenType.IDENTIFIER:
                     return "identifier";
-                case JackCompiler.TokenType.INT_COSNT:
+                case JackCompiler.TokenType.INT_CONST:
                     return "integerConstant";
                 case JackCompiler.TokenType.KEYWORD:
                     return "keyword";
