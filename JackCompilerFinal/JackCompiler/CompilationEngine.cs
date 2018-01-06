@@ -16,7 +16,6 @@ namespace JackCompiler
     {
         Tokenizer _tokenizer;
         IVmWriter _vmWriter;
-        private string className;
 
         private readonly char[] ops = { '+', '-', '*', '/', '&','|', '<', '>', '=' };
 
@@ -76,7 +75,6 @@ namespace JackCompiler
             
             // compile className
             var identifierToken = EatIdentifier();
-            className = identifierToken.Value;
             
             // compile '{'
             var leftBraceToken = Eat("{");
@@ -223,7 +221,8 @@ namespace JackCompiler
             {
                 subLocals = CompileVarDec(depth + 1);
             }
-            _vmWriter.WriteFunction(string.Format("{0}.{1}", className, subName), subLocals);
+            var sbThis = SymbolTableManager.Find("this");
+            _vmWriter.WriteFunction(string.Format("{0}.{1}", sbThis.Type, subName), subLocals);
 
             // compile: statements
             CompileStatements(depth + 1);
