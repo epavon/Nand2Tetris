@@ -164,7 +164,7 @@ namespace JackCompiler
             var rightParenToken = Eat(")");
 
             // compile: subroutineBody
-            CompileSubroutineBody(depth + 1, subNameToken.Value);
+            CompileSubroutineBody(depth + 1, subNameToken.Value, className);
 
         }
 
@@ -209,7 +209,7 @@ namespace JackCompiler
 
         //
         // subroutineBody: '{' varDec* statements '}'
-        public void CompileSubroutineBody(int depth, string subName)
+        public void CompileSubroutineBody(int depth, string subName, string className)
         {
             int subLocals = 0;
 
@@ -221,8 +221,7 @@ namespace JackCompiler
             {
                 subLocals = CompileVarDec(depth + 1);
             }
-            var sbThis = SymbolTableManager.Find("this");
-            _vmWriter.WriteFunction(string.Format("{0}.{1}", sbThis.Type, subName), subLocals);
+            _vmWriter.WriteFunction(string.Format("{0}.{1}", className, subName), subLocals);
 
             // compile: statements
             CompileStatements(depth + 1);
@@ -587,7 +586,7 @@ namespace JackCompiler
                 var leftParenToken = Eat("(");
 
                 // compile: expressionList
-                args = CompileExpressionList(depth) + 1;
+                args = CompileExpressionList(depth);
 
                 // compile: ')'
                 var rightParenToken = Eat(")");
