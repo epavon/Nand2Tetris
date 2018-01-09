@@ -361,7 +361,7 @@ namespace JackCompiler
 
             // compile: varName
             var varNameToken = EatIdentifier();
-            var varAssignedSymbolTableItem = SymbolTableManager.Find(varNameToken.Value);
+            var sbVarName = SymbolTableManager.Find(varNameToken.Value);
 
             // compile: ('[' expression ']')?
             if(_tokenizer.CurrentToken.Value == "[")
@@ -383,7 +383,7 @@ namespace JackCompiler
             CompileExpression(depth + 1);
 
             // pop varAssigned
-            _vmWriter.WritePop(varAssignedSymbolTableItem.Kind.ToString(), varAssignedSymbolTableItem.Number);
+            _vmWriter.WritePop(sbVarName.KindDisplay, sbVarName.Number);
 
             // compile: ';'
             var semiColonToken = Eat(";");
@@ -432,6 +432,9 @@ namespace JackCompiler
             // compile: ';'
             var semiColonToken = Eat(";");
 
+            // write pop
+            _vmWriter.WritePop("temp", 0);
+
         }
 
         //
@@ -447,6 +450,10 @@ namespace JackCompiler
             if(_tokenizer.CurrentToken.Value != ";")
             {
                 CompileExpression(depth + 1);
+            }
+            else
+            {
+                _vmWriter.WritePush("constant", 0);
             }
 
             // compile: ';'
@@ -515,7 +522,7 @@ namespace JackCompiler
                 CompileTerm(depth + 1);
 
                 // write op
-                _vmWriter.WriteOp(unaryOpToken);
+                _vmWriter.WriteUnaryOp(unaryOpToken);
             }
             // compile: '(' expression ')'
             else if(_tokenizer.CurrentToken.Value == "(")
@@ -562,7 +569,7 @@ namespace JackCompiler
                 else
                 {
                     var varNameToken = EatIdentifier();
-                    _vmWriter.WritePush(sbVarName.Kind.ToString(), sbVarName.Number);
+                    _vmWriter.WritePush(sbVarName.KindDisplay, sbVarName.Number);
                 }
             }
 

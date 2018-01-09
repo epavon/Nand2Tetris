@@ -91,5 +91,13 @@ namespace JackCompiler.Writer
             }
             _streamWriter.WriteLine(opCommand);
         }
+
+
+
+
+        public void WriteUnaryOp(Token opToken)
+        {
+            _streamWriter.WriteLine(opToken.Value == "-" ? "neg" : "~");
+        }
     }
 }
