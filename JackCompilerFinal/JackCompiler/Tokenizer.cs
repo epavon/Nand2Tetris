@@ -104,6 +104,17 @@ namespace JackCompiler
                     if (curChar != '"' && !commentBlock)
                         token += curChar;
 
+                    // handle block comment
+                    if (commentBlock)
+                    {
+                        if (curChar == '*' && nextChar == '/')
+                        {
+                            _reader.Read();
+                            commentBlock = false;
+                        }
+                        continue;
+                    }
+
                     // handle stringConstant
                     if (isStringConstant)
                     {
@@ -132,17 +143,6 @@ namespace JackCompiler
                     {
                         isStringConstant = true;
                         token = string.Empty;
-                        continue;
-                    }
-
-                    // handle block comment
-                    if (commentBlock)
-                    {
-                        if (curChar == '*' && nextChar == '/')
-                        {
-                            _reader.Read();
-                            commentBlock = false;
-                        }
                         continue;
                     }
 
