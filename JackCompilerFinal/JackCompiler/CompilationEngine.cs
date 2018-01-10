@@ -17,6 +17,22 @@ namespace JackCompiler
         Tokenizer _tokenizer;
         IVmWriter _vmWriter;
 
+        int _whilelabelCounter = 0;
+        int _ifLabelCounter = 0;
+
+        public int WhileLabelCounter
+        {
+            get { _whilelabelCounter++; return _whilelabelCounter - 1; }
+        }
+
+        public int IfLabelCounter
+        {
+            get
+            {
+                _ifLabelCounter++; return _ifLabelCounter - 1; 
+            }
+        }
+
         private readonly char[] ops = { '+', '-', '*', '/', '&','|', '<', '>', '=' };
 
         //
@@ -396,14 +412,20 @@ namespace JackCompiler
         {
             string compUnit = "whileStatement";
 
+            string startLabel = "LWHILE_" + WhileLabelCounter;
+            string endLabel = "LWHILE_" + WhileLabelCounter;
+
             // compile: 'while'
             var whileToken = Eat("while");
+            _vmWriter.WriteLabel(startLabel);
 
             // compile: '('
             var leftParenToken = Eat("(");
 
             // compile: expression
             CompileExpression(depth + 1);
+            _vmWriter.WriteUnaryOp(new Token { Value = "~" });
+            _vmWriter.WriteIf(endLabel);
 
             // compile: ')'
             var rightParenToken = Eat(")");
