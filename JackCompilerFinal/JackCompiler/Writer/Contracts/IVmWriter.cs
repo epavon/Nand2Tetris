@@ -13,7 +13,7 @@ namespace JackCompiler.Writer.Contracts
         void WriterArithmetic(string command);
         void WriteLabel(string label);
         void WriteGoto(string label);
-        void WriteIf(string label);
+        void WriteIfGoto(string label);
         void WriteCall(string name, int nArgs);
         void WriteFunction(string name, int nLocals);
         void WriteReturn();

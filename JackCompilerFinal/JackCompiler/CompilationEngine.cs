@@ -326,7 +326,8 @@ namespace JackCompiler
         // ifStatement: 'if' '(' expression ')' '{' statements '}' ('else' '{' statements '}' )?
         public void CompileIfStatement(int depth)
         {
-            string compUnit = "ifStatement";
+            string startLabel = "LIF_" + IfLabelCounter;
+            string endLabel = "LIF_" + IfLabelCounter;
 
             // compile: 'if'
             var ifToken = Eat("if");
@@ -337,6 +338,10 @@ namespace JackCompiler
             // compile: expression
             CompileExpression(depth + 1);
 
+            // write: not , if-goto startLabel
+            _vmWriter.WriteUnaryOp(new Token { Value = "~" });
+            _vmWriter.WriteIfGoto(startLabel);
+
             // compile: ')'
             var rightParenToken = Eat(")");
 
@@ -345,6 +350,12 @@ namespace JackCompiler
 
             // compile: statements
             CompileStatements(depth + 1);
+
+            // write: goto endLabel
+            _vmWriter.WriteGoto(endLabel);
+
+            // write: label startLabel
+            _vmWriter.WriteLabel(startLabel);
 
             // compile: '}'
             var rightBraceToken = Eat("}");
@@ -365,6 +376,9 @@ namespace JackCompiler
                 rightBraceToken = Eat("}");
 
             }
+
+            // write: endLabel
+            _vmWriter.WriteLabel(endLabel);
 
         }
 
@@ -424,8 +438,10 @@ namespace JackCompiler
 
             // compile: expression
             CompileExpression(depth + 1);
+
+            // write: go to end label
             _vmWriter.WriteUnaryOp(new Token { Value = "~" });
-            _vmWriter.WriteIf(endLabel);
+            _vmWriter.WriteIfGoto(endLabel);
 
             // compile: ')'
             var rightParenToken = Eat(")");
@@ -435,6 +451,10 @@ namespace JackCompiler
 
             // compile: statements
             CompileStatements(depth + 1);
+
+            // write: go to start label & end label
+            _vmWriter.WriteGoto(startLabel);
+            _vmWriter.WriteLabel(endLabel);
 
             // compile: '}'
             var rightBraceToken = Eat("}");
@@ -530,7 +550,14 @@ namespace JackCompiler
                     ||  _tokenizer.CurrentToken.GetKeywordType() == Types.KeywordType.NULL
                     ||  _tokenizer.CurrentToken.GetKeywordType() == Types.KeywordType.THIS)
             {
-                
+                if(_tokenizer.CurrentToken.GetKeywordType() == KeywordType.TRUE)
+                {
+                    _vmWriter.WritePush("constant", 1);
+                }
+                if (_tokenizer.CurrentToken.GetKeywordType() == KeywordType.FALSE)
+                {
+                    _vmWriter.WritePush("constant", 0);
+                }
                 _tokenizer.Advance();
             }
             // compile: unaryOp term

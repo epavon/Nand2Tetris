@@ -43,7 +43,7 @@ namespace JackCompiler.Writer
 
         public void WriteLabel(string label)
         {
-            _streamWriter.WriteLine(label);
+            _streamWriter.WriteLine("label " + label);
         }
 
         public void WriteGoto(string label)
@@ -51,7 +51,7 @@ namespace JackCompiler.Writer
             _streamWriter.WriteLine("goto " + label);
         }
 
-        public void WriteIf(string label)
+        public void WriteIfGoto(string label)
         {
             _streamWriter.WriteLine("if-goto " + label);
         }
