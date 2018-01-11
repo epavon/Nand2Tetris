@@ -85,6 +85,21 @@ namespace JackCompiler.Writer
                 case "*":
                     opCommand = "call Math.multiply 2";
                     break;
+                case "<":
+                    opCommand = "lt";
+                    break;
+                case ">":
+                    opCommand = "gt";
+                    break;
+                case "=":
+                    opCommand = "eq";
+                    break;
+                case "&":
+                    opCommand = "and";
+                    break;
+                case "|":
+                    opCommand = "or";
+                    break;
                 default:
                     break;
 
