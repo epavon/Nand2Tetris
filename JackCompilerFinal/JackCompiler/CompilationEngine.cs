@@ -547,7 +547,8 @@ namespace JackCompiler
             {
                 if(_tokenizer.CurrentToken.GetKeywordType() == KeywordType.TRUE)
                 {
-                    _vmWriter.WritePush("constant", 1);
+                    _vmWriter.WritePush("constant", 0);
+                    _vmWriter.WriteUnaryOp(new Token { Value = "~" });
                 }
                 if (_tokenizer.CurrentToken.GetKeywordType() == KeywordType.FALSE)
                 {
