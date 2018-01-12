@@ -68,7 +68,7 @@ namespace JackCompiler.Writer
 
         public void WriteReturn()
         {
-            throw new NotImplementedException();
+            _streamWriter.WriteLine("return");
         }
 
         public void WriteOp(Token opToken)

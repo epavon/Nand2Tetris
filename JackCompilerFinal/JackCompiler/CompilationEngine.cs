@@ -478,8 +478,6 @@ namespace JackCompiler
         // 'return' expression? ';'
         public void CompileReturnStatement(int depth)
         {
-            string compUnit = "returnStatement";
-
             // compile: 'return'
             var returnToken = Eat("return");
 
@@ -496,6 +494,8 @@ namespace JackCompiler
             // compile: ';'
             var semiColonToken = Eat(";");
 
+            // write return
+            _vmWriter.WriteReturn();
         }
 
 
