@@ -16,7 +16,7 @@ namespace JackCompiler
     {
         Tokenizer _tokenizer;
         IVmWriter _vmWriter;
-
+        string className = string.Empty;
         int _whilelabelCounter = 0;
         int _ifLabelCounter = 0;
 
@@ -81,8 +81,6 @@ namespace JackCompiler
         // class: 'class' className '{' classVarDec* subroutineDec* '}'
         public void CompileClass(int depth)
         {
-            string compUnit = "class";
-
             // init class symbol table
             SymbolTableManager.ResetClassSymbolTable();
 
@@ -91,6 +89,7 @@ namespace JackCompiler
 
             // compile className
             var identifierToken = EatIdentifier();
+            className = identifierToken.Value;
 
             // compile '{'
             var leftBraceToken = Eat("{");
@@ -181,13 +180,6 @@ namespace JackCompiler
 
             // compile: subroutineBody
             CompileSubroutineBody(depth + 1, subToken.Value, subNameToken.Value, className);
-
-            // if constructor -> return this
-            //if(subToken.Value == "constructor")
-            //{
-            //    _vmWriter.WritePush("pointer", 0);
-            //    _vmWriter.WriteReturn();
-            //}
 
         }
 
@@ -644,12 +636,13 @@ namespace JackCompiler
             int args = 0;
             string sbSubName = string.Empty;
             var nextToken = _tokenizer.Peek();
+
             // compile: subroutineName '(' expressionList ')'
             if (nextToken.Value == "(")
             {
                 // compile: subroutineName
                 var subName = EatIdentifier();
-                sbSubName = subName.Value;
+                sbSubName = className + "." + subName.Value;
 
                 // compile: '('
                 var leftParenToken = Eat("(");
