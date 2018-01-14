@@ -51,12 +51,18 @@ namespace JackCompiler
             return result;
         }
 
-        public static int GetLocals()
+        public static int GetLocalsNum()
         {
             int result = 0;
 
             result = SymbolTable[VarScopeType.SUBROUTINE_LEVEL].Count(si => si.KindDisplay == "local");
 
+            return result;
+        }
+
+        public static int GetFieldsNum()
+        {
+            int result = SymbolTable[VarScopeType.CLASS_LEVEL].Count(si => si.KindDisplay == "this");
             return result;
         }
     }
