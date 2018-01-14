@@ -250,6 +250,11 @@ namespace JackCompiler
                 _vmWriter.WritePush("constant", wordsToAllocate);
                 _vmWriter.WriteCall("Memory.alloc", 1);
                 _vmWriter.WritePop("pointer", 0);
+            } 
+            else if(subType == "method")
+            {
+                _vmWriter.WritePush("argument", 0);
+                _vmWriter.WritePop("pointer", 0);
             }
 
             // compile: statements
