@@ -634,12 +634,14 @@ namespace JackCompiler
         public void CompileSubroutineCall(int depth)
         {
             int args = 0;
+            int argadder = 0;
             string sbSubName = string.Empty;
             var nextToken = _tokenizer.Peek();
 
             // compile: subroutineName '(' expressionList ')'
             if (nextToken.Value == "(")
             {
+                argadder = 1;
                 // compile: subroutineName
                 var subName = EatIdentifier();
                 sbSubName = className + "." + subName.Value;
@@ -648,7 +650,7 @@ namespace JackCompiler
                 var leftParenToken = Eat("(");
 
                 // compile: expressionList
-                args = CompileExpressionList(depth);
+                args = CompileExpressionList(depth) + argadder;
 
                 // compile: ')'
                 var rightParenToken = Eat(")");
@@ -659,12 +661,15 @@ namespace JackCompiler
                 var nameToken = EatIdentifier();
                 var sbClass = SymbolTableManager.Find(nameToken.Value);
                 if (sbClass == null)
-                {
+                {   // handle: class.function(...)
                     sbSubName = nameToken.Value;
                 }
                 else
-                {
-                    sbSubName = nameToken.Value;
+                {   // handle: obj.method(...)
+                    argadder = 1;
+                    sbSubName = sbClass.Type;
+                    var sbObj = SymbolTableManager.Find(nameToken.Value);
+                    _vmWriter.WritePush("local", sbObj.Number);
                 }
 
                 // compile '.'
@@ -679,7 +684,7 @@ namespace JackCompiler
                 var leftParenToken = Eat("(");
 
                 // compile: expression
-                args = CompileExpressionList(depth);
+                args = CompileExpressionList(depth) + argadder;
 
                 // compile: ')'
                 var rightParenToken = Eat(")");
