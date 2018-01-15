@@ -544,6 +544,14 @@ namespace JackCompiler
             // compile: stringConstant
             else if (_tokenizer.CurrentToken.TokenType == TokenType.STRING_CONST)
             {
+                int strLen = _tokenizer.CurrentToken.Value.Length;
+                _vmWriter.WritePush("constant", strLen);
+                _vmWriter.WriteCall("String.new", 1);
+                foreach (char strChar in _tokenizer.CurrentToken.Value)
+                {
+                    _vmWriter.WritePush("constant", (int)strChar);
+                    _vmWriter.WriteCall("String.appendChar", 2);
+                }
                 _tokenizer.Advance();
             }
             // compile: keywordConstant
@@ -603,12 +611,18 @@ namespace JackCompiler
                 {
                     // compile: varName
                     var varNameToken = EatIdentifier();
+                    _vmWriter.WritePush(sbVarName.KindDisplay, sbVarName.Number);
 
                     // compile: '['
                     var leftBracketToken = Eat("[");
 
                     // compile: expression
                     CompileExpression(depth + 1);
+
+                    // add offset
+                    _vmWriter.WriteOp(new Token { Value = "+" });
+                    _vmWriter.WritePop("pointer", 1);
+                    _vmWriter.WritePush("that", 0);
 
                     // compile: ']'
                     var rightBracketToken = Eat("]");
