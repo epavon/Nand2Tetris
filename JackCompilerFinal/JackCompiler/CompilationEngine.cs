@@ -481,7 +481,6 @@ namespace JackCompiler
 
             // write pop
             _vmWriter.WritePop("temp", 0);
-
         }
 
         //
@@ -646,6 +645,9 @@ namespace JackCompiler
                 var subName = EatIdentifier();
                 sbSubName = className + "." + subName.Value;
 
+                // handle: push 'this' to stack -> push pointer 0
+                _vmWriter.WritePush("pointer", 0);
+
                 // compile: '('
                 var leftParenToken = Eat("(");
 
@@ -669,7 +671,7 @@ namespace JackCompiler
                     argadder = 1;
                     sbSubName = sbClass.Type;
                     var sbObj = SymbolTableManager.Find(nameToken.Value);
-                    _vmWriter.WritePush("local", sbObj.Number);
+                    _vmWriter.WritePush(sbObj.KindDisplay, sbObj.Number);
                 }
 
                 // compile '.'
