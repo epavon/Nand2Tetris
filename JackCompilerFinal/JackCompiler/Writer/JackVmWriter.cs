@@ -100,6 +100,9 @@ namespace JackCompiler.Writer
                 case "|":
                     opCommand = "or";
                     break;
+                case "/":
+                    opCommand = "call Math.divide 2";
+                    break;
                 default:
                     break;
 

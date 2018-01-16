@@ -50,6 +50,7 @@
     <Compile Include="Helpers\WriterHelper.cs" />
     <Compile Include="Models\CompilationUnit.cs" />
     <Compile Include="Models\Expression.cs" />
+    <Compile Include="Models\Types\AssignmentType.cs" />
     <Compile Include="SymbolTableManager.cs" />
     <Compile Include="Models\SymbolTableItem.cs" />
     <Compile Include="Models\Types\VarKindType.cs" />

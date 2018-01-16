@@ -342,7 +342,7 @@ namespace JackCompiler
             var leftParenToken = Eat("(");
 
             // compile: expression
-            CompileExpression(depth + 1);
+            CompileExpression(depth + 1, AssignmentType.NONE);
 
             // write: not , if-goto startLabel
             _vmWriter.WriteUnaryOp(new Token { Value = "~" });
@@ -411,6 +411,10 @@ namespace JackCompiler
                 // compile: expression
                 CompileExpression(depth + 1, AssignmentType.LEFT);
 
+                // write array
+                _vmWriter.WritePush(sbVarName.KindDisplay, sbVarName.Number);
+                _vmWriter.WriteOp(new Token { Value = "+" });
+
                 // compile: ']'
                 var rightBracketToken = Eat("]");
             }
@@ -422,7 +426,7 @@ namespace JackCompiler
             CompileExpression(depth + 1, AssignmentType.RIGHT);
 
             // pop varAssigned
-            if (!isLeftArray)
+            if (isLeftArray)
             {
                 _vmWriter.WritePop("temp", 0);
                 _vmWriter.WritePop("pointer", 1);
@@ -456,7 +460,7 @@ namespace JackCompiler
             var leftParenToken = Eat("(");
 
             // compile: expression
-            CompileExpression(depth + 1);
+            CompileExpression(depth + 1, AssignmentType.NONE);
 
             // write: go to end label
             _vmWriter.WriteUnaryOp(new Token { Value = "~" });
@@ -507,7 +511,7 @@ namespace JackCompiler
             // compile: expression?
             if (_tokenizer.CurrentToken.Value != ";")
             {
-                CompileExpression(depth + 1);
+                CompileExpression(depth + 1, AssignmentType.NONE);
             }
             else
             {
@@ -736,7 +740,7 @@ namespace JackCompiler
             // compile: (expression (',' expression)* )?
             if (_tokenizer.CurrentToken.Value != ")")
             {
-                CompileExpression(depth + 1);
+                CompileExpression(depth + 1, AssignmentType.NONE);
                 expressionCount++;
                 while (_tokenizer.CurrentToken.Value == ",")
                 {
@@ -744,7 +748,7 @@ namespace JackCompiler
                     var commaToken = Eat(",");
 
                     // compile: expression
-                    CompileExpression(depth + 1);
+                    CompileExpression(depth + 1, AssignmentType.NONE);
                     expressionCount++;
                 }
             }
