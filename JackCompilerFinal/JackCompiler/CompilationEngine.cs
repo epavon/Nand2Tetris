@@ -1,6 +1,7 @@
 ﻿using JackCompiler.Contracts;
 using JackCompiler.Exceptions;
 using JackCompiler.Models;
+using JackCompiler.Models.Types;
 using JackCompiler.Types;
 using JackCompiler.Writer.Contracts;
 using System;
@@ -391,6 +392,8 @@ namespace JackCompiler
         // letStatement: 'let' varName ('[' expression ']')? '=' expression ';'
         public void CompileLetStatement(int depth)
         {
+            bool isLeftArray = false;
+
             // compile: 'let'
             var letToken = Eat("let");
 
@@ -401,11 +404,12 @@ namespace JackCompiler
             // compile: ('[' expression ']')?
             if (_tokenizer.CurrentToken.Value == "[")
             {
+                isLeftArray = true;
                 // compile: '['
                 var leftBracketToken = Eat("[");
 
                 // compile: expression
-                CompileExpression(depth + 1);
+                CompileExpression(depth + 1, AssignmentType.LEFT);
 
                 // compile: ']'
                 var rightBracketToken = Eat("]");
@@ -415,10 +419,20 @@ namespace JackCompiler
             var assignmentToken = Eat("=");
 
             // compile: expression
-            CompileExpression(depth + 1);
+            CompileExpression(depth + 1, AssignmentType.RIGHT);
 
             // pop varAssigned
-            _vmWriter.WritePop(sbVarName.KindDisplay, sbVarName.Number);
+            if (!isLeftArray)
+            {
+                _vmWriter.WritePop("temp", 0);
+                _vmWriter.WritePop("pointer", 1);
+                _vmWriter.WritePush("temp", 0);
+                _vmWriter.WritePop("that", 0);
+            }
+            else
+            {
+                _vmWriter.WritePop(sbVarName.KindDisplay, sbVarName.Number);
+            }
 
             // compile: ';'
             var semiColonToken = Eat(";");
@@ -510,10 +524,10 @@ namespace JackCompiler
 
         //
         // expression : term (op term)?
-        public void CompileExpression(int depth)
+        public void CompileExpression(int depth, AssignmentType assignType)
         {
             // compile: term -> push term
-            CompileTerm(depth + 1);
+            CompileTerm(depth + 1, assignType);
 
             // compile: (op term)?
             if (ops.Contains(_tokenizer.CurrentToken.Value[0]))
@@ -522,7 +536,7 @@ namespace JackCompiler
                 var opToken = EatOp();
 
                 // compile: term
-                CompileTerm(depth + 1);
+                CompileTerm(depth + 1, assignType);
 
                 // write op
                 _vmWriter.WriteOp(opToken);
@@ -532,7 +546,7 @@ namespace JackCompiler
 
         //
         // term : integerConstant | stringConstant | keywordConstant | unaryOp term | '(' expression ')' | varName | varName '[' expression ']' | subroutineCall 
-        public void CompileTerm(int depth)
+        public void CompileTerm(int depth, AssignmentType assignType)
         {
 
             // compile: integerConstant
@@ -583,7 +597,7 @@ namespace JackCompiler
                 _tokenizer.Advance();
 
                 // compile: term
-                CompileTerm(depth + 1);
+                CompileTerm(depth + 1, assignType);
 
                 // write op
                 _vmWriter.WriteUnaryOp(unaryOpToken);
@@ -595,7 +609,7 @@ namespace JackCompiler
                 var leftParenToken = Eat("(");
 
                 // compile: expression
-                CompileExpression(depth + 1);
+                CompileExpression(depth + 1, assignType);
 
                 // compile: ')'
                 var rightParenToken = Eat(")");
@@ -617,13 +631,16 @@ namespace JackCompiler
                     var leftBracketToken = Eat("[");
 
                     // compile: expression
-                    CompileExpression(depth + 1);
+                    CompileExpression(depth + 1, assignType);
 
-                    // add offset
                     _vmWriter.WriteOp(new Token { Value = "+" });
-                    _vmWriter.WritePop("pointer", 1);
-                    _vmWriter.WritePush("that", 0);
-
+                    // add offset
+                    if(assignType == AssignmentType.RIGHT)
+                    {
+                        _vmWriter.WritePop("pointer", 1);
+                        _vmWriter.WritePush("that", 0);
+                    }
+                    
                     // compile: ']'
                     var rightBracketToken = Eat("]");
                 }
