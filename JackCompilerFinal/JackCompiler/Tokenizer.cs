@@ -85,8 +85,10 @@ namespace JackCompiler
             bool commentBlock = false, isStringConstant = false;
             if (HasMoreTokens())
             {
-                for (char curChar = ' ', nextChar = ' '; _reader.Peek() >= 0; curChar = (char)_reader.Read(), nextChar = (char)_reader.Peek())
+                int curCharNum = 32;
+                for (char curChar = ' ', nextChar = ' '; curCharNum >= 0; curCharNum = _reader.Read(), nextChar = (char)_reader.Peek())
                 {
+                    curChar = Convert.ToChar(curCharNum);
                     // Skip whitespace
                     if (!isStringConstant)
                     {
