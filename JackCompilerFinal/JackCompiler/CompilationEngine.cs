@@ -239,8 +239,8 @@ namespace JackCompilerFinal
                 _vmWriter.WritePush("constant", wordsToAllocate);
                 _vmWriter.WriteCall("Memory.alloc", 1);
                 _vmWriter.WritePop("pointer", 0);
-            } 
-            else if(subType == "method")
+            }
+            else if (subType == "method")
             {
                 _vmWriter.WritePush("argument", 0);
                 _vmWriter.WritePop("pointer", 0);
@@ -578,9 +578,13 @@ namespace JackCompilerFinal
                 {
                     _vmWriter.WritePush("constant", 0);
                 }
-                if(_tokenizer.CurrentToken.GetKeywordType() == KeywordType.THIS)
+                if (_tokenizer.CurrentToken.GetKeywordType() == KeywordType.THIS)
                 {
                     _vmWriter.WritePush("pointer", 0);
+                }
+                if(_tokenizer.CurrentToken.GetKeywordType() == KeywordType.NULL)
+                {
+                    _vmWriter.WritePush("constant", 0);
                 }
                 _tokenizer.Advance();
             }
@@ -620,22 +624,20 @@ namespace JackCompilerFinal
                 {
                     // compile: varName
                     var varNameToken = EatIdentifier();
-                    _vmWriter.WritePush(sbVarName.KindDisplay, sbVarName.Number);
 
                     // compile: '['
                     var leftBracketToken = Eat("[");
 
                     // compile: expression
                     CompileExpression(depth + 1, assignType);
+                    _vmWriter.WritePush(sbVarName.KindDisplay, sbVarName.Number);
 
                     _vmWriter.WriteOp(new Token { Value = "+" });
                     // add offset
-                    if(assignType == AssignmentType.RIGHT)
-                    {
-                        _vmWriter.WritePop("pointer", 1);
-                        _vmWriter.WritePush("that", 0);
-                    }
-                    
+                    _vmWriter.WritePop("pointer", 1);
+                    _vmWriter.WritePush("that", 0);
+
+
                     // compile: ']'
                     var rightBracketToken = Eat("]");
                 }
