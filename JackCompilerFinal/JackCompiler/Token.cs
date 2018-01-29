@@ -1,11 +1,11 @@
-﻿using JackCompiler.Types;
+﻿using JackCompilerFinal.Types;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace JackCompiler
+namespace JackCompilerFinal
 {
     public class Token
     {
@@ -31,7 +31,7 @@ namespace JackCompiler
         {
             KeywordType thisKeywordType = KeywordType.NONE;
 
-            if(TokenType == JackCompiler.TokenType.KEYWORD)
+            if(TokenType == JackCompilerFinal.TokenType.KEYWORD)
             {
                 var keywordTypeValues = Enum.GetValues(typeof(KeywordType));
                 foreach (var kwType in keywordTypeValues)
@@ -50,15 +50,15 @@ namespace JackCompiler
         {
             switch(TokenType)
             {
-                case JackCompiler.TokenType.IDENTIFIER:
+                case JackCompilerFinal.TokenType.IDENTIFIER:
                     return "identifier";
-                case JackCompiler.TokenType.INT_CONST:
+                case JackCompilerFinal.TokenType.INT_CONST:
                     return "integerConstant";
-                case JackCompiler.TokenType.KEYWORD:
+                case JackCompilerFinal.TokenType.KEYWORD:
                     return "keyword";
-                case JackCompiler.TokenType.STRING_CONST:
+                case JackCompilerFinal.TokenType.STRING_CONST:
                     return "stringConstant";
-                case JackCompiler.TokenType.SYMBOL:
+                case JackCompilerFinal.TokenType.SYMBOL:
                     return "symbol";
             }
             return string.Empty;

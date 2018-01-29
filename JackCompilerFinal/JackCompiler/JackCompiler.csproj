@@ -7,7 +7,7 @@
     <ProjectGuid>{DE195DEF-EC11-4711-82B4-A8F6397BD0D3}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>JackCompiler</RootNamespace>
+    <RootNamespace>JackCompilerFinal</RootNamespace>
     <AssemblyName>JackCompiler</AssemblyName>
     <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
@@ -59,7 +59,7 @@
     <Compile Include="Writer\ConsoleTokenWriter.cs" />
     <Compile Include="Writer\Contracts\IVmWriter.cs" />
     <Compile Include="Writer\Contracts\ITokenWriter.cs" />
-    <Compile Include="JackAnalyzer.cs" />
+    <Compile Include="JackCompiler.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SettingsReader.cs" />
     <Compile Include="Token.cs" />

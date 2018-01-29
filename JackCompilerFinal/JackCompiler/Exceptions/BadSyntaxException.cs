@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace JackCompiler.Exceptions
+namespace JackCompilerFinal.Exceptions
 {
     public class BadSyntaxException : Exception
     {

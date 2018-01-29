@@ -1,12 +1,12 @@
-﻿using JackCompiler.Contracts;
-using JackCompiler.Helpers;
+﻿using JackCompilerFinal.Contracts;
+using JackCompilerFinal.Helpers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace JackCompiler.Writer
+namespace JackCompilerFinal.Writer
 {
     public class ConsoleTokenWriter : ITokenWriter
     {

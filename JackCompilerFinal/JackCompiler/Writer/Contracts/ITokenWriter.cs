@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace JackCompiler.Contracts
+namespace JackCompilerFinal.Contracts
 {
     public interface ITokenWriter
     {

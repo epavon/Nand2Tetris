@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace JackCompiler.Writer.Contracts
+namespace JackCompilerFinal.Writer.Contracts
 {
     public interface IVmWriter
     {

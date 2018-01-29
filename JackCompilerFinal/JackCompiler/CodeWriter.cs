@@ -1,12 +1,12 @@
-﻿using JackCompiler.Models;
-using JackCompiler.Writer.Contracts;
+﻿using JackCompilerFinal.Models;
+using JackCompilerFinal.Writer.Contracts;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace JackCompiler
+namespace JackCompilerFinal
 {
     public class CodeWriter
     {

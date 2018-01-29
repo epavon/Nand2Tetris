@@ -1,12 +1,12 @@
-﻿using JackCompiler.Models;
-using JackCompiler.Types;
+﻿using JackCompilerFinal.Models;
+using JackCompilerFinal.Types;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace JackCompiler
+namespace JackCompilerFinal
 {
     public static class SymbolTableManager
     {

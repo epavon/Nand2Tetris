@@ -1,9 +1,9 @@
-﻿using JackCompiler.Contracts;
-using JackCompiler.Exceptions;
-using JackCompiler.Models;
-using JackCompiler.Models.Types;
-using JackCompiler.Types;
-using JackCompiler.Writer.Contracts;
+﻿using JackCompilerFinal.Contracts;
+using JackCompilerFinal.Exceptions;
+using JackCompilerFinal.Models;
+using JackCompilerFinal.Models.Types;
+using JackCompilerFinal.Types;
+using JackCompilerFinal.Writer.Contracts;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -11,7 +11,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace JackCompiler
+namespace JackCompilerFinal
 {
     public class CompilationEngine : IDisposable
     {
@@ -118,8 +118,6 @@ namespace JackCompiler
         // classVarDec: ('static'|'field') type varName (',' varName)* ';'
         public void CompileClassVarDec(int depth)
         {
-            string compUnit = "classVarDec";
-
             // compile: 'static' | 'field'
             var varKind = SoftEat("field") ?? Eat("static");
             var stVarKind = (VarKindType)Enum.Parse(typeof(VarKindType), varKind.Value.ToUpper());
@@ -152,8 +150,6 @@ namespace JackCompiler
         // ('constructor'|'function'|'method') ('void'|type) subtroutineName '(' parameterList ')' subroutineBody
         public void CompileSubroutineDec(int depth, string className)
         {
-            string compUnit = "subroutineDec";
-
             // Reset SymbolTable
             SymbolTableManager.ResetSubroutineSymbolTable();
 
@@ -189,12 +185,12 @@ namespace JackCompiler
         public void CompileParameterList(int depth)
         {
             bool commaEncountered = false;
-            string compUnit = "parameterList";
 
             // compile: ( (type varName) (',' type varName)* )? 
             while (_tokenizer.CurrentToken.GetKeywordType() == Types.KeywordType.BOOLEAN
                 || _tokenizer.CurrentToken.GetKeywordType() == Types.KeywordType.INT
                 || _tokenizer.CurrentToken.GetKeywordType() == Types.KeywordType.CHAR
+                || _tokenizer.CurrentToken.TokenType == TokenType.IDENTIFIER        // Handle Array and Object types
                 || commaEncountered)
             {
                 // compile: type
@@ -294,8 +290,6 @@ namespace JackCompiler
         // statements : statement* --> statement : letStatement | ifStatement | whileStatement| doStatement | returnStatement
         public void CompileStatements(int depth)
         {
-            string compUnit = "statements";
-
             while (true)
             {
                 if (_tokenizer.CurrentToken.GetKeywordType() == Types.KeywordType.LET)
@@ -447,8 +441,6 @@ namespace JackCompiler
         // whileStatement: 'while' '(' expression ')' '{' statements '}' 
         public void CompileWhileStatement(int depth)
         {
-            string compUnit = "whileStatement";
-
             string startLabel = "LWHILE_" + WhileLabelCounter;
             string endLabel = "LWHILE_" + WhileLabelCounter;
 
@@ -524,7 +516,6 @@ namespace JackCompiler
             // write return
             _vmWriter.WriteReturn();
         }
-
 
         //
         // expression : term (op term)?

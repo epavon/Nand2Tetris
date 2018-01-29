@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace JackCompiler.Types
+namespace JackCompilerFinal.Types
 {
     public enum KeywordType
     {

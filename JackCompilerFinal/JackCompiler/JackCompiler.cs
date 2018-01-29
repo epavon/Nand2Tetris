@@ -1,4 +1,4 @@
-﻿using JackCompiler.Writer;
+﻿using JackCompilerFinal.Writer;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -6,9 +6,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace JackCompiler
+namespace JackCompilerFinal
 {
-    class JackAnalyzer
+    class JackCompiler
     {
         static void Main(string[] args)
         {

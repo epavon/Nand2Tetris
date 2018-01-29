@@ -5,7 +5,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
-namespace JackCompiler.Types
+namespace JackCompilerFinal.Types
 {
     public static class IdentifierHelper
     {

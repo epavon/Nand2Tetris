@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace JackCompiler.Models.Types
+namespace JackCompilerFinal.Models.Types
 {
     public enum AssignmentType
     {

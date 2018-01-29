@@ -1,11 +1,11 @@
-﻿using JackCompiler.Writer.Contracts;
+﻿using JackCompilerFinal.Writer.Contracts;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace JackCompiler.Models
+namespace JackCompilerFinal.Models
 {
     public class CompilationUnit
     {
